@@ -85,6 +85,7 @@ exports.getDocuments = async (req, res) => {
         maxSize: doc.maxSize,
         required: doc.required,
         uploaded: !!uploadedFile,
+        fileUrl: uploadedFile ? `/api/dokumen/file/${sdmType}/${personnelId}/${uploadedFile.filename}` : null,
         file: uploadedFile ? {
           filename: uploadedFile.filename,
           path: uploadedFile.path,
@@ -383,6 +384,47 @@ exports.getPhoto = async (req, res) => {
   } catch (error) {
     console.error('Error getting photo:', error);
     res.status(500).json({ error: 'Gagal mengambil foto' });
+  }
+};
+
+// Get file info for all personnel (admin)
+exports.getAllFilesInfo = async (req, res) => {
+  try {
+    const { sdmType } = req.params;
+    const { dokumenConfig } = require('../utils/dokumenConfig');
+    const { listFiles, findFileByDocKey } = require('../utils/fileUtils');
+
+    const config = dokumenConfig[sdmType];
+    if (!config) {
+      return res.status(400).json({ error: 'Jenis SDM tidak valid' });
+    }
+
+    // Get all personnel
+    const [rows] = await pool.query(`SELECT id, nama, dokumen FROM ${config.tableName}`);
+
+    const personnel = rows.map(person => {
+      const files = listFiles(sdmType, person.id);
+      const documents = config.documents.map(doc => {
+        const file = findFileByDocKey(sdmType, person.id, doc.key);
+        return {
+          key: doc.key,
+          label: doc.label,
+          hasFile: !!file,
+          filename: file ? file.filename : null,
+          fileUrl: file ? `/api/dokumen/file/${sdmType}/${person.id}/${file.filename}` : null
+        };
+      });
+      return {
+        id: person.id,
+        nama: person.nama,
+        documents
+      };
+    });
+
+    res.json({ personnel, sdmType });
+  } catch (error) {
+    console.error('Error getting all files info:', error);
+    res.status(500).json({ error: 'Gagal mengambil info file' });
   }
 };
 

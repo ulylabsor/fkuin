@@ -16,7 +16,7 @@ import {
   Award,
   Check
 } from 'lucide-react';
-import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys } from '../api/api';
+import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys, getPublicFileInfo } from '../api/api';
 
 const calculateProgress = (dokumen) => {
   if (!dokumen) return { completed: 0, total: 0, percentage: 0, isComplete: false };

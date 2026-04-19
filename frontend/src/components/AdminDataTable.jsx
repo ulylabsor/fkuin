@@ -14,10 +14,37 @@ import {
   X,
   Save,
   FileText,
-  Edit2
+  Edit2,
+  ExternalLink
 } from 'lucide-react';
 import DocumentModal from './DocumentModal';
-import { getPhoto } from '../api/api';
+import { getPhoto, getDocumentsAdmin } from '../api/api';
+
+// Mapping key database ke folder key
+const dbToFolderKey = {
+  'Foto': 'Foto',
+  'KTP': 'KTP',
+  'Surat Perjanjian DT': 'Surat_Perjanjian_Dosen_Tetap',
+  'Surat Penugasan Rector': 'Surat_Penugasan_Rektor',
+  'Surat Penugasan': 'Surat_Penugasan_Rektor',
+  'Pernyataan EWMP': 'Surat_Pernyataan_EWMP',
+  'CV': 'CV',
+  'SIP': 'SIP',
+  'STR': 'STR',
+  'Sertifikat Pelatihan': 'Sertifikat_Pelatihan',
+  'Ijazah S1': 'Ijazah_S1',
+  'Ijazah Profesi': 'Ijazah_Profesi',
+  'Ijazah S2': 'Ijazah_S2',
+  'Transkrip S1': 'Transkrip_S1',
+  'Transkrip Profesi': 'Transkrip_Profesi',
+  'Transkrip S2': 'Transkrip_S2',
+  'Ijazah Spesialis': 'Ijazah_Spesialis',
+  'Serkam': 'Sertifikat_Kompetensi',
+  'Ijazah (S1-S2)': 'Ijazah_S1_S2_Profesi',
+  'Transkrip': 'Transkrip_S1_S2_Profesi',
+  'Ijazah': 'Ijazah_S1_S2_S3',
+  'Surat Pernyataan': 'Surat_Pernyataan'
+};
 
 // Urutan dokumen sesuai dengan modal upload
 const documentOrder = {
@@ -168,6 +195,32 @@ export default function AdminDataTable({
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
+  };
+
+  // Open document in new tab
+  const openDocument = async (person, docKey) => {
+    // Check if document is marked as uploaded in database
+    if (!person.dokumen || !person.dokumen[docKey]) {
+      showToast('Dokumen belum diunggah', 'warning');
+      return;
+    }
+
+    // Map database key to folder key
+    const folderKey = dbToFolderKey[docKey] || docKey;
+
+    try {
+      const res = await getDocumentsAdmin(sdmType, person.id);
+      const doc = res.data.documents.find(d => d.key === folderKey);
+      if (doc && doc.file?.filename) {
+        const fileUrl = `/api/public/file/${sdmType}/${person.id}/${doc.file.filename}`;
+        window.open(fileUrl, '_blank');
+      } else {
+        showToast('File tidak ditemukan di server', 'warning');
+      }
+    } catch (err) {
+      console.error('Error fetching document:', err);
+      showToast('Gagal membuka dokumen', 'error');
+    }
   };
 
   const filteredData = data.filter(person => {
@@ -898,7 +951,18 @@ export default function AdminDataTable({
                                 }`}>
                                   {person.dokumen[key] && <Check className="w-2.5 h-2.5" />}
                                 </div>
-                                <span className={`text-xs ${person.dokumen[key] ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{key}</span>
+                                {person.dokumen[key] ? (
+                                  <button
+                                    onClick={() => openDocument(person, key)}
+                                    className="text-xs text-emerald-600 font-medium hover:text-emerald-800 hover:underline flex items-center gap-1"
+                                    title={`Klik untuk melihat ${key}`}
+                                  >
+                                    {key}
+                                    <ExternalLink className="w-3 h-3" />
+                                  </button>
+                                ) : (
+                                  <span className="text-xs text-slate-400">{key}</span>
+                                )}
                               </div>
                             ))}
                           </div>

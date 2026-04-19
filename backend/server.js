@@ -100,6 +100,85 @@ app.get('/api/public/photo/:sdmType/:personnelId', async (req, res) => {
   }
 });
 
+// Public route for serving document files (without auth)
+app.get('/api/public/file/:sdmType/:personnelId/:filename', (req, res) => {
+  const { sdmType, personnelId, filename } = req.params;
+  const { dokumenConfig } = require('./utils/dokumenConfig');
+
+  // Translate sdmType to folder name
+  const config = dokumenConfig[sdmType];
+  if (!config) {
+    return res.status(400).json({ error: 'Jenis SDM tidak valid' });
+  }
+
+  // Security: prevent directory traversal
+  const uploadsDir = path.join(__dirname, 'uploads');
+  const filePath = path.join(uploadsDir, config.folder, personnelId, filename);
+  const normalizedPath = path.normalize(filePath);
+
+  if (!normalizedPath.startsWith(uploadsDir)) {
+    return res.status(403).json({ error: 'Akses ditolak' });
+  }
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'File tidak ditemukan' });
+  }
+
+  // Set content type based on extension
+  const ext = path.extname(filename).toLowerCase();
+  const contentTypes = {
+    '.pdf': 'application/pdf',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png'
+  };
+
+  res.setHeader('Content-Type', contentTypes[ext] || 'application/octet-stream');
+  res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+  res.sendFile(filePath);
+});
+
+// Public route to check if document file exists for all personnel
+app.get('/api/public/file-info/:sdmType', async (req, res) => {
+  const { sdmType } = req.params;
+  const { dokumenConfig } = require('./utils/dokumenConfig');
+  const { listFiles, findFileByDocKey } = require('./utils/fileUtils');
+
+  try {
+    const config = dokumenConfig[sdmType];
+    if (!config) {
+      return res.status(400).json({ error: 'Jenis SDM tidak valid' });
+    }
+
+    // Get all personnel for this SDM type
+    const [rows] = await pool.query(`SELECT id, nama, dokumen FROM ${config.tableName}`);
+
+    const personnel = rows.map(person => {
+      const files = listFiles(sdmType, person.id);
+      const documents = config.documents.map(doc => {
+        const file = findFileByDocKey(sdmType, person.id, doc.key);
+        return {
+          key: doc.key,
+          label: doc.label,
+          hasFile: !!file,
+          filename: file ? file.filename : null,
+          fileUrl: file ? `/api/public/file/${sdmType}/${person.id}/${file.filename}` : null
+        };
+      });
+      return {
+        id: person.id,
+        nama: person.nama,
+        documents
+      };
+    });
+
+    res.json({ personnel, sdmType });
+  } catch (error) {
+    console.error('Error getting file info:', error);
+    res.status(500).json({ error: 'Gagal mengambil info file' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });

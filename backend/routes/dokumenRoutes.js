@@ -24,6 +24,9 @@ router.get('/:sdmType/:personnelId/photo', dokumenController.getPhoto);
 // Get all documents for a personnel
 router.get('/:sdmType/:personnelId', dokumenController.getDocuments);
 
+// Get file info for all personnel (admin only)
+router.get('/:sdmType/all/files', dokumenController.getAllFilesInfo);
+
 // Upload document (multipart/form-data)
 router.post('/upload',
   upload.single('file'),

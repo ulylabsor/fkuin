@@ -57,10 +57,18 @@ export const deleteTendik = (id) => api.delete(`/tendik/${id}`);
 export const getStats = () => api.get('/stats');
 
 // Dokumen
-export const getDocuments = (sdmType, personnelId) => api.get(`/dokumen/${sdmType}/${personnelId}`);
+export const getDocuments = (sdmType, personnelId) => {
+  if (personnelId === 'all') {
+    return api.get(`/dokumen/${sdmType}/all/files`);
+  }
+  return api.get(`/dokumen/${sdmType}/${personnelId}`);
+};
+export const getDocumentsAdmin = (sdmType, personnelId) =>
+  api.get(`/dokumen/${sdmType}/${personnelId}`);
 export const getPhoto = (sdmType, personnelId) => api.get(`/dokumen/${sdmType}/${personnelId}/photo`);
 export const getPublicPhoto = (sdmType, personnelId) => api.get(`/public/photo/${sdmType}/${personnelId}`);
 export const getPublicDocumentKeys = (sdmType) => api.get(`/public/documents/${sdmType}`);
+export const getPublicFileInfo = (sdmType) => api.get(`/public/file-info/${sdmType}`);
 
 export const uploadDocument = (formData) => {
   // Create a new axios instance for uploads to avoid Content-Type issues

@@ -12,7 +12,8 @@ import {
   Eye,
   EyeOff,
   Search,
-  FileText
+  FileText,
+  Award
 } from 'lucide-react';
 import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys } from '../api/api';
 
@@ -383,7 +384,26 @@ export default function Dashboard() {
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-slate-900 text-[15px] leading-tight truncate pr-2">{person.nama}</h4>
                     <p className="text-sm text-slate-500 font-medium truncate">{person.bidang || '-'}</p>
-                    <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                    {activeTab === 'sarjana' && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {person.nik && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                            NIK: {person.nik}
+                          </span>
+                        )}
+                        {person.no_hp && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                            HP: {person.no_hp}
+                          </span>
+                        )}
+                        {person.mata_kuliah && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold truncate max-w-[180px]">
+                            {person.mata_kuliah}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${progress.isComplete ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
                         {progress.isComplete ? 'Lengkap' : 'Belum Lengkap'}
                       </span>
@@ -403,9 +423,52 @@ export default function Dashboard() {
                   </div>
                 </div>
                 {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
-                    <p className="text-xs font-semibold text-slate-500">Kualifikasi: {person.kualifikasi || '-'}</p>
-                    <div className="space-y-1">
+                  <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                    {activeTab === 'sarjana' && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">NIK</span>
+                          <span className="text-xs text-slate-700">{person.nik || '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">STR</span>
+                          <span className="text-xs text-slate-700">{person.no_str || '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">HP</span>
+                          <span className="text-xs text-slate-700">{person.no_hp || '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">TTL</span>
+                          <span className="text-xs text-slate-700">
+                            {[person.tempat_lahir, person.tanggal_lahir ? new Date(person.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(', ') || '-'}
+                          </span>
+                        </div>
+                        {person.alamat_ktp && (
+                          <div className="flex items-start gap-1.5">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 mt-0.5">Alamat</span>
+                            <span className="text-xs text-slate-700 leading-relaxed">{person.alamat_ktp}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">MK</span>
+                          <span className="text-xs text-slate-700">{person.mata_kuliah || '-'}</span>
+                        </div>
+                        {person.judul_thesis && (
+                          <div className="flex items-start gap-1.5">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 mt-0.5">Thesis</span>
+                            <span className="text-xs text-slate-700 leading-relaxed">{person.judul_thesis}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <Award className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">Kuali.</span>
+                          <span className="text-xs text-slate-700">{person.kualifikasi || '-'}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-3 border-t border-slate-100 space-y-3">
                       {(documentKeys[activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
                         const value = person.dokumen[doc.label] || person.dokumen[doc.key];
                         return (

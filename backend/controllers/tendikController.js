@@ -38,7 +38,7 @@ exports.getById = async (req, res) => {
 // Create new tendik
 exports.create = async (req, res) => {
   try {
-    const { nama, bidang, kualifikasi, dokumen, catatan } = req.body;
+    const { nama, no_hp, alamat_ktp, bidang, kualifikasi, dokumen, catatan } = req.body;
 
     if (!nama) {
       return res.status(400).json({ error: 'Nama is required' });
@@ -56,8 +56,8 @@ exports.create = async (req, res) => {
     const finalDokumen = dokumen || defaultDokumen;
 
     const [result] = await pool.query(
-      'INSERT INTO tendik (nama, bidang, kualifikasi, dokumen, catatan) VALUES (?, ?, ?, ?, ?)',
-      [nama, bidang || '', kualifikasi || '', JSON.stringify(finalDokumen), catatan || '']
+      'INSERT INTO tendik (nama, no_hp, alamat_ktp, bidang, kualifikasi, dokumen, catatan) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nama, no_hp || '', alamat_ktp || '', bidang || '', kualifikasi || '', JSON.stringify(finalDokumen), catatan || '']
     );
 
     const [newRow] = await pool.query('SELECT * FROM tendik WHERE id = ?', [result.insertId]);
@@ -75,7 +75,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nama, bidang, kualifikasi, dokumen, catatan } = req.body;
+    const { nama, no_hp, alamat_ktp, bidang, kualifikasi, dokumen, catatan } = req.body;
 
     const [existing] = await pool.query('SELECT * FROM tendik WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -86,6 +86,8 @@ exports.update = async (req, res) => {
     const values = [];
 
     if (nama !== undefined) { updates.push('nama = ?'); values.push(nama); }
+    if (no_hp !== undefined) { updates.push('no_hp = ?'); values.push(no_hp); }
+    if (alamat_ktp !== undefined) { updates.push('alamat_ktp = ?'); values.push(alamat_ktp); }
     if (bidang !== undefined) { updates.push('bidang = ?'); values.push(bidang); }
     if (kualifikasi !== undefined) { updates.push('kualifikasi = ?'); values.push(kualifikasi); }
     if (dokumen !== undefined) { updates.push('dokumen = ?'); values.push(JSON.stringify(dokumen)); }

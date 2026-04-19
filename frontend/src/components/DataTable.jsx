@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Search,
   Plus,
@@ -129,7 +129,7 @@ export default function DataTable({
     }
   }, [data, sdmType]);
 
-  const filteredData = data.filter(person => {
+  const filteredData = useMemo(() => data.filter(person => {
     const matchSearch = person.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         person.bidang?.toLowerCase().includes(searchTerm.toLowerCase());
     const progress = calculateProgress(person.dokumen);
@@ -137,15 +137,22 @@ export default function DataTable({
     if (statusFilter === 'complete') matchStatus = progress.isComplete;
     if (statusFilter === 'incomplete') matchStatus = !progress.isComplete;
     return matchSearch && matchStatus;
-  });
+  }), [data, searchTerm, statusFilter]);
 
-  const totalComplete = data.filter(p => calculateProgress(p.dokumen).isComplete).length;
-  const totalIncomplete = data.length - totalComplete;
+  const totalComplete = useMemo(() => data.filter(p => calculateProgress(p.dokumen).isComplete).length, [data]);
+  const totalIncomplete = useMemo(() => data.length - totalComplete, [data, totalComplete]);
 
-  const getInitials = (name) => {
+  const getInitials = useCallback((name) => {
     let cleanName = name.replace(/^(dr\.|Dr\.|Hj\.)\s*/i, '');
     return cleanName.substring(0, 2).toUpperCase();
-  };
+  }, []);
+
+  const handleDokumenChange = useCallback((docKey, value) => {
+    setEditData(prev => ({
+      ...prev,
+      dokumen: { ...prev.dokumen, [docKey]: value }
+    }));
+  }, []);
 
   const handleEdit = (person) => {
     setEditingId(person.id);
@@ -161,13 +168,6 @@ export default function DataTable({
     await onSave(editingId, editData);
     setEditingId(null);
     setEditData(null);
-  };
-
-  const handleDokumenChange = (docKey, value) => {
-    setEditData(prev => ({
-      ...prev,
-      dokumen: { ...prev.dokumen, [docKey]: value }
-    }));
   };
 
   const handleAddPerson = async () => {
@@ -454,14 +454,24 @@ export default function DataTable({
                       <p className="text-sm text-slate-500 font-medium truncate mt-0.5">
                         {person.bidang || '-'}
                       </p>
-                      {(person.nik || person.no_hp || person.mata_kuliah) && (
-                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] text-slate-400">
-                          {person.nik && <span>NIK: {person.nik}</span>}
-                          {person.no_hp && <span>HP: {person.no_hp}</span>}
-                          {person.mata_kuliah && <span className="truncate">{person.mata_kuliah}</span>}
-                        </div>
-                      )}
-                      <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {sdmType === 'dosenSarjana' && person.nik && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                            NIK: {person.nik}
+                          </span>
+                        )}
+                        {sdmType === 'dosenSarjana' && person.no_hp && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                            HP: {person.no_hp}
+                          </span>
+                        )}
+                        {sdmType === 'dosenSarjana' && person.mata_kuliah && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold truncate max-w-[180px]">
+                            {person.mata_kuliah}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
                             progress.isComplete
@@ -492,61 +502,115 @@ export default function DataTable({
 
                 {/* Expanded Content */}
                 {isExpanded && (
-                  <div className="bg-slate-50 rounded-b-2xl border-t border-slate-100">
-                    {/* Info Detail */}
-                    <div className="px-5 py-3 border-b border-slate-200/60 bg-white">
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
-                        {person.nik && (
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-slate-500">NIK:</span>
-                            <span className="text-slate-700">{person.nik}</span>
-                          </div>
+                  <div className="bg-white rounded-b-2xl border-t border-slate-200">
+                    {/* Info Detail - Dosen Sarjana only */}
+                    {sdmType === 'dosenSarjana' && (
+                      <div className="px-5 pt-4 pb-3 space-y-2 border-b border-slate-100">
+                        {isEditing ? (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">Nama</span>
+                              <input value={editData?.nama || ''} onChange={(e) => setEditData(p => ({ ...p, nama: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">Bidang</span>
+                              <input value={editData?.bidang || ''} onChange={(e) => setEditData(p => ({ ...p, bidang: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">Kuali.</span>
+                              <input value={editData?.kualifikasi || ''} onChange={(e) => setEditData(p => ({ ...p, kualifikasi: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">NIK</span>
+                              <input value={editData?.nik || ''} onChange={(e) => setEditData(p => ({ ...p, nik: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">STR</span>
+                              <input value={editData?.no_str || ''} onChange={(e) => setEditData(p => ({ ...p, no_str: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">HP</span>
+                              <input value={editData?.no_hp || ''} onChange={(e) => setEditData(p => ({ ...p, no_hp: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">T.Lahir</span>
+                              <input value={editData?.tempat_lahir || ''} onChange={(e) => setEditData(p => ({ ...p, tempat_lahir: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">Tgl.Lhr</span>
+                              <input type="date" value={editData?.tanggal_lahir || ''} onChange={(e) => setEditData(p => ({ ...p, tanggal_lahir: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 mt-1">Alamat</span>
+                              <textarea value={editData?.alamat_ktp || ''} onChange={(e) => setEditData(p => ({ ...p, alamat_ktp: e.target.value }))}
+                                rows="2"
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400 resize-none" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">MK</span>
+                              <input value={editData?.mata_kuliah || ''} onChange={(e) => setEditData(p => ({ ...p, mata_kuliah: e.target.value }))}
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400" />
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 mt-1">Thesis</span>
+                              <textarea value={editData?.judul_thesis || ''} onChange={(e) => setEditData(p => ({ ...p, judul_thesis: e.target.value }))}
+                                rows="2"
+                                className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400 resize-none" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">NIK</span>
+                              <span className="text-xs text-slate-700">{person.nik || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">STR</span>
+                              <span className="text-xs text-slate-700">{person.no_str || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">HP</span>
+                              <span className="text-xs text-slate-700">{person.no_hp || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">TTL</span>
+                              <span className="text-xs text-slate-700">
+                                {[person.tempat_lahir, person.tanggal_lahir ? new Date(person.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(', ') || '-'}
+                              </span>
+                            </div>
+                            {person.alamat_ktp && (
+                              <div className="flex items-start gap-1.5">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 mt-0.5">Alamat</span>
+                                <span className="text-xs text-slate-700 leading-relaxed">{person.alamat_ktp}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">MK</span>
+                              <span className="text-xs text-slate-700">{person.mata_kuliah || '-'}</span>
+                            </div>
+                            {person.judul_thesis && (
+                              <div className="flex items-start gap-1.5">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14 mt-0.5">Thesis</span>
+                                <span className="text-xs text-slate-700 leading-relaxed">{person.judul_thesis}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5">
+                              <Award className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-14">Kuali.</span>
+                              <span className="text-xs text-slate-700">{person.kualifikasi || '-'}</span>
+                            </div>
+                          </>
                         )}
-                        {person.no_str && (
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-slate-500">No. STR:</span>
-                            <span className="text-slate-700">{person.no_str}</span>
-                          </div>
-                        )}
-                        {person.no_hp && (
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-slate-500">No. HP:</span>
-                            <span className="text-slate-700">{person.no_hp}</span>
-                          </div>
-                        )}
-                        {person.tempat_lahir || person.tanggal_lahir ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-slate-500">TTL:</span>
-                            <span className="text-slate-700">
-                              {person.tempat_lahir || ''}{person.tanggal_lahir ? `, ${new Date(person.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}
-                            </span>
-                          </div>
-                        ) : null}
-                        {person.alamat_ktp && (
-                          <div className="flex items-center gap-1.5 col-span-2">
-                            <span className="font-semibold text-slate-500">Alamat KTP:</span>
-                            <span className="text-slate-700">{person.alamat_ktp}</span>
-                          </div>
-                        )}
-                        {person.mata_kuliah && (
-                          <div className="flex items-center gap-1.5 col-span-2">
-                            <span className="font-semibold text-slate-500">Mata Kuliah:</span>
-                            <span className="text-slate-700">{person.mata_kuliah}</span>
-                          </div>
-                        )}
-                        {person.judul_thesis && (
-                          <div className="flex items-center gap-1.5 col-span-2">
-                            <span className="font-semibold text-slate-500">Judul Thesis:</span>
-                            <span className="text-slate-700">{person.judul_thesis}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                          <Award className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="font-semibold text-slate-500">Kualifikasi:</span>
-                          <span className="text-slate-700">{person.kualifikasi || '-'}</span>
-                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Checklist */}
                     <div className="p-5 space-y-2.5">
@@ -615,7 +679,7 @@ export default function DataTable({
                     )}
 
                     {/* Actions */}
-                    <div className="p-4 border-t border-slate-200/60 bg-white flex justify-between">
+                    <div className="p-4 border-t border-slate-200/60 bg-white flex flex-wrap justify-between gap-2">
                       {isEditing ? (
                         <>
                           <button

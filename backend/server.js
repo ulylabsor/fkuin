@@ -161,6 +161,10 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS pembimbing_klinik (
         id INT PRIMARY KEY AUTO_INCREMENT,
         nama VARCHAR(100) NOT NULL,
+        no_str VARCHAR(30),
+        no_hp VARCHAR(20),
+        alamat_ktp TEXT,
+        sip VARCHAR(30),
         bidang VARCHAR(100),
         kualifikasi VARCHAR(100),
         dokumen JSON,
@@ -170,19 +174,22 @@ async function initDatabase() {
       )
     `);
 
-    // Create tendik table
+    // Add new columns to existing tables
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS tendik (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        nama VARCHAR(100) NOT NULL,
-        bidang VARCHAR(100),
-        kualifikasi VARCHAR(100),
-        dokumen JSON,
-        catatan TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
+      ALTER TABLE pembimbing_klinik
+      ADD COLUMN IF NOT EXISTS no_str VARCHAR(30),
+      ADD COLUMN IF NOT EXISTS no_hp VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS alamat_ktp TEXT,
+      ADD COLUMN IF NOT EXISTS sip VARCHAR(30)
     `);
+
+    await connection.query(`
+      ALTER TABLE tendik
+      ADD COLUMN IF NOT EXISTS no_hp VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS alamat_ktp TEXT
+    `);
+
+    // Create tendik table
 
     connection.release();
     console.log('Database tables initialized successfully');

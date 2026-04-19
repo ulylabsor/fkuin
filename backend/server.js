@@ -129,6 +129,7 @@ async function initDatabase() {
         bidang VARCHAR(100),
         kualifikasi VARCHAR(100),
         dokumen JSON,
+        catatan TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
@@ -142,6 +143,7 @@ async function initDatabase() {
         bidang VARCHAR(100),
         kualifikasi VARCHAR(100),
         dokumen JSON,
+        catatan TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
@@ -155,6 +157,7 @@ async function initDatabase() {
         bidang VARCHAR(100),
         kualifikasi VARCHAR(100),
         dokumen JSON,
+        catatan TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )

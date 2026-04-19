@@ -38,7 +38,7 @@ exports.getById = async (req, res) => {
 // Create new dosen sarjana
 exports.create = async (req, res) => {
   try {
-    const { nama, bidang, kualifikasi, dokumen } = req.body;
+    const { nama, bidang, kualifikasi, dokumen, catatan } = req.body;
 
     if (!nama) {
       return res.status(400).json({ error: 'Nama is required' });
@@ -65,8 +65,8 @@ exports.create = async (req, res) => {
     const finalDokumen = dokumen || defaultDokumen;
 
     const [result] = await pool.query(
-      'INSERT INTO dosen_sarjana (nama, bidang, kualifikasi, dokumen) VALUES (?, ?, ?, ?)',
-      [nama, bidang || '', kualifikasi || '', JSON.stringify(finalDokumen)]
+      'INSERT INTO dosen_sarjana (nama, bidang, kualifikasi, dokumen, catatan) VALUES (?, ?, ?, ?, ?)',
+      [nama, bidang || '', kualifikasi || '', JSON.stringify(finalDokumen), catatan || '']
     );
 
     const [newRow] = await pool.query('SELECT * FROM dosen_sarjana WHERE id = ?', [result.insertId]);
@@ -84,7 +84,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nama, bidang, kualifikasi, dokumen } = req.body;
+    const { nama, bidang, kualifikasi, dokumen, catatan } = req.body;
 
     const [existing] = await pool.query('SELECT * FROM dosen_sarjana WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -98,6 +98,7 @@ exports.update = async (req, res) => {
     if (bidang !== undefined) { updates.push('bidang = ?'); values.push(bidang); }
     if (kualifikasi !== undefined) { updates.push('kualifikasi = ?'); values.push(kualifikasi); }
     if (dokumen !== undefined) { updates.push('dokumen = ?'); values.push(JSON.stringify(dokumen)); }
+    if (catatan !== undefined) { updates.push('catatan = ?'); values.push(catatan); }
 
     if (updates.length === 0) {
       return res.status(400).json({ error: 'No fields to update' });

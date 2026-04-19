@@ -11,7 +11,10 @@ import {
   XCircle,
   AlertCircle,
   FileUp,
-  X
+  X,
+  Save,
+  FileText,
+  Edit2
 } from 'lucide-react';
 import DocumentModal from './DocumentModal';
 import { getPhoto } from '../api/api';
@@ -93,6 +96,22 @@ function Toast({ message, type, onClose }) {
   );
 }
 
+const formatUpdatedAt = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Baru saja';
+  if (diffMins < 60) return `${diffMins} menit lalu`;
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  if (diffDays < 7) return `${diffDays} hari lalu`;
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
 export default function AdminDataTable({
   title,
   description,
@@ -101,7 +120,8 @@ export default function AdminDataTable({
   onRefresh,
   onAdd,
   onDelete,
-  sdmType
+  sdmType,
+  onUpdateCatatan
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -109,6 +129,8 @@ export default function AdminDataTable({
   const [newPerson, setNewPerson] = useState({ nama: '', bidang: '', kualifikasi: '' });
   const [expandedId, setExpandedId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [editingCatatanId, setEditingCatatanId] = useState(null);
+  const [catatanValue, setCatatanValue] = useState('');
   const [documentModal, setDocumentModal] = useState({
     open: false,
     personnelId: null,
@@ -317,22 +339,33 @@ export default function AdminDataTable({
 
         {/* Data Grid */}
         {filteredData.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="columns-1 md:columns-2 xl:columns-3 gap-5">
             {filteredData.map((person) => {
               const progress = calculateProgress(person.dokumen);
               const isExpanded = expandedId === person.id;
 
+              const hasCatatan = !!person.catatan;
+
+              const toggleExpand = (e) => {
+                e.stopPropagation();
+                setExpandedId((prev) => (prev === person.id ? null : person.id));
+              };
+
               return (
                 <div
                   key={person.id}
-                  className={`bg-white rounded-2xl border-2 ${
-                    isExpanded ? 'border-slate-300 shadow-md' : 'border-slate-200 shadow-sm'
-                  } hover:shadow-md transition-all flex flex-col`}
+                  className={`break-inside-avoid rounded-2xl border-2 flex flex-col transition-all duration-200 mb-5 ${
+                    isExpanded
+                      ? 'border-slate-300 shadow-lg'
+                      : hasCatatan
+                      ? 'border-amber-300 shadow-sm bg-amber-50/30'
+                      : 'border-slate-200 shadow-sm hover:shadow-md'
+                  }`}
                 >
                   {/* Header */}
                   <div
                     className="p-5 cursor-pointer select-none"
-                    onClick={() => setExpandedId(isExpanded ? null : person.id)}
+                    onClick={toggleExpand}
                   >
                     <div className="flex items-start gap-4">
                       <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
@@ -369,13 +402,22 @@ export default function AdminDataTable({
                           </div>
                         </div>
                         <p className="text-sm text-slate-500 font-medium truncate mt-0.5">{person.bidang || '-'}</p>
-                        <div className="mt-2.5 flex items-center gap-2">
+                        <div className="mt-2.5 flex items-center gap-2 flex-wrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
                             progress.isComplete ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                           }`}>
                             {progress.isComplete ? 'Lengkap' : 'Belum Lengkap'}
                           </span>
                           <span className="text-xs font-semibold text-slate-400">{progress.completed}/{progress.total} Syarat</span>
+                          {hasCatatan && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                              <FileText className="w-3 h-3" />
+                              Ada Catatan
+                            </span>
+                          )}
+                          {person.updated_at && (
+                            <span className="text-xs text-slate-400 ml-auto">Diubah {formatUpdatedAt(person.updated_at)}</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -387,6 +429,58 @@ export default function AdminDataTable({
                       <div className="px-5 py-3 border-b border-slate-200/60 flex items-center gap-2 bg-white">
                         <Award className="w-4 h-4 text-slate-400" />
                         <span className="text-xs font-semibold text-slate-600">{person.kualifikasi || 'Kualifikasi'}</span>
+                      </div>
+
+                      <div className="px-5 py-3 border-b border-slate-200/60">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-slate-400" />
+                            <span className="text-xs font-semibold text-slate-600">Catatan</span>
+                          </div>
+                          {editingCatatanId !== person.id && (
+                            <button
+                              onClick={() => { setEditingCatatanId(person.id); setCatatanValue(person.catatan || ''); }}
+                              className="text-xs text-blue-500 hover:text-blue-700 font-medium flex items-center gap-1"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                              {person.catatan ? 'Edit' : 'Tambah'}
+                            </button>
+                          )}
+                        </div>
+                        {editingCatatanId === person.id ? (
+                          <div className="space-y-2">
+                            <textarea
+                              value={catatanValue}
+                              onChange={(e) => setCatatanValue(e.target.value)}
+                              rows={3}
+                              placeholder="Tambahkan catatan tentang personel ini..."
+                              className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await onUpdateCatatan(person.id, catatanValue);
+                                    setEditingCatatanId(null);
+                                    showToast('Catatan berhasil disimpan', 'success');
+                                    onRefresh();
+                                  } catch {
+                                    showToast('Gagal menyimpan catatan', 'error');
+                                  }
+                                }}
+                                className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg"
+                              >Simpan</button>
+                              <button
+                                onClick={() => setEditingCatatanId(null)}
+                                className="px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                              >Batal</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className={`text-sm ${person.catatan ? 'text-slate-700' : 'text-slate-400 italic'}`}>
+                            {person.catatan || 'Belum ada catatan'}
+                          </p>
+                        )}
                       </div>
 
                       <div className="px-5 py-3 max-h-48 overflow-y-auto">

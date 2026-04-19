@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import AdminDataTable from '../components/AdminDataTable';
-import { getPembimbingKlinik, createPembimbingKlinik, deletePembimbingKlinik } from '../api/api';
+import { getPembimbingKlinik, createPembimbingKlinik, deletePembimbingKlinik, updatePembimbingKlinik } from '../api/api';
 
 export default function AdminPembimbingKlinik() {
   const [data, setData] = useState([]);
@@ -42,6 +42,10 @@ export default function AdminPembimbingKlinik() {
     }
   };
 
+  const handleUpdateCatatan = async (id, catatan) => {
+    await updatePembimbingKlinik(id, { catatan });
+  };
+
   return (
     <AdminLayout>
       <AdminDataTable
@@ -52,6 +56,7 @@ export default function AdminPembimbingKlinik() {
         onRefresh={loadData}
         onAdd={handleAdd}
         onDelete={handleDelete}
+        onUpdateCatatan={handleUpdateCatatan}
         sdmType="pembimbingKlinik"
       />
     </AdminLayout>

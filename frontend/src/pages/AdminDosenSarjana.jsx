@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import AdminDataTable from '../components/AdminDataTable';
-import { getDosenSarjana, createDosenSarjana, deleteDosenSarjana } from '../api/api';
+import { getDosenSarjana, createDosenSarjana, deleteDosenSarjana, updateDosenSarjana } from '../api/api';
 
 export default function AdminDosenSarjana() {
   const [data, setData] = useState([]);
@@ -42,6 +42,10 @@ export default function AdminDosenSarjana() {
     }
   };
 
+  const handleUpdateCatatan = async (id, catatan) => {
+    await updateDosenSarjana(id, { catatan });
+  };
+
   return (
     <AdminLayout>
       <AdminDataTable
@@ -52,6 +56,7 @@ export default function AdminDosenSarjana() {
         onRefresh={loadData}
         onAdd={handleAdd}
         onDelete={handleDelete}
+        onUpdateCatatan={handleUpdateCatatan}
         sdmType="dosenSarjana"
       />
     </AdminLayout>

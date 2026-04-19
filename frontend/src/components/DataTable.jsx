@@ -5,13 +5,12 @@ import {
   Edit2,
   Trash2,
   ChevronDown,
-  ChevronUp,
   Check,
   X,
   Award,
-  Mail,
   Save,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 import { getPublicPhoto } from '../api/api';
 
@@ -26,6 +25,22 @@ const calculateProgress = (dokumen) => {
     percentage: Math.round((completed / keys.length) * 100),
     isComplete: completed === keys.length
   };
+};
+
+const formatUpdatedAt = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Baru saja';
+  if (diffMins < 60) return `${diffMins} menit lalu`;
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  if (diffDays < 7) return `${diffDays} hari lalu`;
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
 const CircularProgress = ({ percentage, size = 48, strokeWidth = 4 }) => {
@@ -71,7 +86,6 @@ export default function DataTable({
   onRefresh,
   onSave,
   onDelete,
-  documentLabels,
   defaultDocuments,
   sdmType
 }) {
@@ -291,24 +305,33 @@ export default function DataTable({
 
       {/* Data Grid */}
       {filteredData.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="columns-1 lg:columns-2 xl:columns-3 gap-5">
           {filteredData.map((person) => {
             const progress = calculateProgress(person.dokumen);
             const isEditing = editingId === person.id;
             const isExpanded = expandedId === person.id;
             const photoKey = `${sdmType}_${person.id}`;
 
+            const hasCatatan = !!person.catatan;
+
             return (
               <div
                 key={person.id}
-                className={`bg-white rounded-2xl border ${
-                  isExpanded ? 'border-slate-300 shadow-md' : 'border-slate-200 shadow-sm'
-                } hover:shadow-md hover:border-slate-300 transition-all flex flex-col`}
+                className={`break-inside-avoid rounded-2xl border-2 flex flex-col transition-all mb-5 ${
+                  isExpanded
+                    ? 'border-slate-300 shadow-md'
+                    : hasCatatan
+                    ? 'border-amber-300 shadow-sm bg-amber-50/30'
+                    : 'border-slate-200 shadow-sm hover:border-slate-300'
+                } hover:shadow-md`}
               >
                 {/* Header */}
                 <div
                   className="p-5 cursor-pointer select-none"
-                  onClick={() => setExpandedId(isExpanded ? null : person.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpandedId(isExpanded ? null : person.id);
+                  }}
                 >
                   <div className="flex items-start gap-4">
                     {/* Avatar */}
@@ -358,7 +381,7 @@ export default function DataTable({
                       <p className="text-sm text-slate-500 font-medium truncate mt-0.5">
                         {person.bidang || '-'}
                       </p>
-                      <div className="mt-2.5 flex items-center gap-2">
+                      <div className="mt-2.5 flex items-center gap-2 flex-wrap">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
                             progress.isComplete
@@ -371,6 +394,17 @@ export default function DataTable({
                         <span className="text-xs font-semibold text-slate-400">
                           {progress.completed}/{progress.total} Syarat
                         </span>
+                        {hasCatatan && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                            <FileText className="w-3 h-3" />
+                            Ada Catatan
+                          </span>
+                        )}
+                        {person.updated_at && (
+                          <span className="text-xs text-slate-400 ml-auto">
+                            {formatUpdatedAt(person.updated_at)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -432,6 +466,26 @@ export default function DataTable({
                         </div>
                       ))}
                     </div>
+
+                    {/* Catatan */}
+                    {person.catatan && (
+                      <div className="px-5 py-3 border-t border-slate-200/60">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <FileText className="w-4 h-4 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-600">Catatan</span>
+                        </div>
+                        <p className="text-sm text-slate-700 whitespace-pre-wrap">{person.catatan}</p>
+                      </div>
+                    )}
+
+                    {/* Timestamp */}
+                    {person.updated_at && (
+                      <div className="px-5 py-2 border-t border-slate-200/60">
+                        <span className="text-xs text-slate-400">
+                          Terakhir diubah: {formatUpdatedAt(person.updated_at)}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Actions */}
                     <div className="p-4 border-t border-slate-200/60 bg-white flex justify-between">

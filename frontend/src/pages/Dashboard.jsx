@@ -11,7 +11,8 @@ import {
   LogIn,
   Eye,
   EyeOff,
-  Search
+  Search,
+  FileText
 } from 'lucide-react';
 import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys } from '../api/api';
 
@@ -49,6 +50,21 @@ const CircularProgress = ({ percentage, size = 48, strokeWidth = 4 }) => {
 const getInitials = (name) => {
   let cleanName = name.replace(/^(dr\.|Dr\.|Hj\.)\s*/i, '');
   return cleanName.substring(0, 2).toUpperCase();
+};
+
+const formatUpdatedAt = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return 'Baru saja';
+  if (diffMins < 60) return `${diffMins} menit lalu`;
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  if (diffDays < 7) return `${diffDays} hari lalu`;
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
 export default function Dashboard() {
@@ -309,15 +325,27 @@ export default function Dashboard() {
         </div>
 
         {/* Data Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-5">
           {filteredData.map((person) => {
             const progress = calculateProgress(person.dokumen);
             const isExpanded = expandedId === person.id;
             const photoKey = `${activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'}_${person.id}`;
+            const hasCatatan = !!person.catatan;
+            const toggleExpand = (e) => {
+              e.stopPropagation();
+              setExpandedId((prev) => (prev === person.id ? null : person.id));
+            };
+
             return (
               <div key={person.id}
-                className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-5 cursor-pointer hover:shadow-md hover:border-slate-300 transition-all ${isExpanded ? 'ring-2 ring-emerald-500' : ''}`}
-                onClick={() => setExpandedId(isExpanded ? null : person.id)}>
+                className={`break-inside-avoid rounded-2xl border-2 shadow-sm p-5 cursor-pointer transition-all duration-200 mb-5 ${
+                  isExpanded
+                    ? 'border-emerald-400 shadow-lg ring-2 ring-emerald-200 bg-white'
+                    : hasCatatan
+                    ? 'border-amber-300 bg-amber-50/30 hover:shadow-md'
+                    : 'border-slate-200 bg-white hover:shadow-md hover:border-slate-300'
+                }`}
+                onClick={toggleExpand}>
                 <div className="flex items-start gap-4">
                   <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
                     <CircularProgress percentage={progress.percentage} />
@@ -342,17 +370,28 @@ export default function Dashboard() {
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-slate-900 text-[15px] leading-tight truncate pr-2">{person.nama}</h4>
                     <p className="text-sm text-slate-500 font-medium truncate">{person.bidang || '-'}</p>
-                    <div className="mt-2.5 flex items-center gap-2">
+                    <div className="mt-2.5 flex items-center gap-2 flex-wrap">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${progress.isComplete ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
                         {progress.isComplete ? 'Lengkap' : 'Belum Lengkap'}
                       </span>
                       <span className="text-xs font-semibold text-slate-400">{progress.completed}/{progress.total} Syarat</span>
+                      {hasCatatan && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                          <FileText className="w-3 h-3" />
+                          Ada Catatan
+                        </span>
+                      )}
+                      {person.updated_at && (
+                        <span className="text-xs text-slate-400 ml-auto">
+                          {formatUpdatedAt(person.updated_at)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
                 {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <p className="text-xs font-semibold text-slate-500 mb-2">Kualifikasi: {person.kualifikasi || '-'}</p>
+                  <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                    <p className="text-xs font-semibold text-slate-500">Kualifikasi: {person.kualifikasi || '-'}</p>
                     <div className="space-y-1">
                       {(documentKeys[activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
                         const value = person.dokumen[doc.label] || person.dokumen[doc.key];
@@ -368,6 +407,22 @@ export default function Dashboard() {
                         );
                       })}
                     </div>
+                    {person.catatan && (
+                      <div className="pt-3 border-t border-slate-100">
+                        <div className="flex items-center gap-2 mb-1">
+                          <FileText className="w-4 h-4 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-600">Catatan</span>
+                        </div>
+                        <p className="text-sm text-slate-700 whitespace-pre-wrap">{person.catatan}</p>
+                      </div>
+                    )}
+                    {person.updated_at && (
+                      <div className="pt-2 border-t border-slate-100">
+                        <span className="text-xs text-slate-400">
+                          Terakhir diubah: {formatUpdatedAt(person.updated_at)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

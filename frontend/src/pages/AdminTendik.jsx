@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import AdminDataTable from '../components/AdminDataTable';
-import { getTendik, createTendik, deleteTendik } from '../api/api';
+import { getTendik, createTendik, deleteTendik, updateTendik } from '../api/api';
 
 export default function AdminTendik() {
   const [data, setData] = useState([]);
@@ -42,6 +42,10 @@ export default function AdminTendik() {
     }
   };
 
+  const handleUpdateCatatan = async (id, catatan) => {
+    await updateTendik(id, { catatan });
+  };
+
   return (
     <AdminLayout>
       <AdminDataTable
@@ -52,6 +56,7 @@ export default function AdminTendik() {
         onRefresh={loadData}
         onAdd={handleAdd}
         onDelete={handleDelete}
+        onUpdateCatatan={handleUpdateCatatan}
         sdmType="tendik"
       />
     </AdminLayout>

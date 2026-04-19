@@ -94,10 +94,17 @@ export default function DataTable({
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [newPerson, setNewPerson] = useState({ nama: '', bidang: '', kualifikasi: '' });
+  const [newPerson, setNewPerson] = useState({
+    nama: '', nik: '', no_str: '', no_hp: '', alamat_ktp: '',
+    tempat_lahir: '', tanggal_lahir: '', mata_kuliah: '', judul_thesis: '',
+    bidang: '', kualifikasi: ''
+  });
   const [expandedId, setExpandedId] = useState(null);
   const [photos, setPhotos] = useState({});
   const loadedPhotosRef = useRef(new Set());
+
+  // Stagger animation delay per card index
+  const getCardDelay = (index) => `${Math.min(index * 40, 600)}ms`;
 
   // Load photos for all personnel
   useEffect(() => {
@@ -166,7 +173,7 @@ export default function DataTable({
   const handleAddPerson = async () => {
     if (!newPerson.nama.trim()) return;
     await onSave(null, { ...newPerson, dokumen: defaultDocuments });
-    setNewPerson({ nama: '', bidang: '', kualifikasi: '' });
+    setNewPerson({ nama: '', nik: '', no_str: '', no_hp: '', alamat_ktp: '', tempat_lahir: '', tanggal_lahir: '', mata_kuliah: '', judul_thesis: '', bidang: '', kualifikasi: '' });
     setShowForm(false);
   };
 
@@ -186,6 +193,15 @@ export default function DataTable({
 
   return (
     <div className="max-w-6xl mx-auto">
+      <style>{`
+        @keyframes card-enter {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .card-animate {
+          animation: card-enter 0.35s ease-out both;
+        }
+      `}</style>
       {/* Header */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -262,12 +278,54 @@ export default function DataTable({
       {showForm && (
         <div className="mb-6 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <h3 className="font-bold text-slate-900 mb-4">Tambah Personel Baru</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <input
               type="text"
-              placeholder="Nama Lengkap"
+              placeholder="Nama Lengkap *"
               value={newPerson.nama}
               onChange={(e) => setNewPerson({ ...newPerson, nama: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="NIK"
+              value={newPerson.nik}
+              onChange={(e) => setNewPerson({ ...newPerson, nik: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="No. STR"
+              value={newPerson.no_str}
+              onChange={(e) => setNewPerson({ ...newPerson, no_str: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="No. HP"
+              value={newPerson.no_hp}
+              onChange={(e) => setNewPerson({ ...newPerson, no_hp: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="Tempat Lahir"
+              value={newPerson.tempat_lahir}
+              onChange={(e) => setNewPerson({ ...newPerson, tempat_lahir: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="date"
+              placeholder="Tanggal Lahir"
+              value={newPerson.tanggal_lahir}
+              onChange={(e) => setNewPerson({ ...newPerson, tanggal_lahir: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="Alamat KTP"
+              value={newPerson.alamat_ktp}
+              onChange={(e) => setNewPerson({ ...newPerson, alamat_ktp: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             />
             <input
@@ -282,6 +340,20 @@ export default function DataTable({
               placeholder="Kualifikasi"
               value={newPerson.kualifikasi}
               onChange={(e) => setNewPerson({ ...newPerson, kualifikasi: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="Mata Kuliah"
+              value={newPerson.mata_kuliah}
+              onChange={(e) => setNewPerson({ ...newPerson, mata_kuliah: e.target.value })}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            />
+            <input
+              type="text"
+              placeholder="Judul Thesis (opsional)"
+              value={newPerson.judul_thesis}
+              onChange={(e) => setNewPerson({ ...newPerson, judul_thesis: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             />
           </div>
@@ -317,13 +389,14 @@ export default function DataTable({
             return (
               <div
                 key={person.id}
-                className={`break-inside-avoid rounded-2xl border-2 flex flex-col transition-all mb-5 ${
+                className={`break-inside-avoid rounded-2xl border-2 flex flex-col transition-all mb-5 card-animate ${
                   isExpanded
                     ? 'border-slate-300 shadow-md'
                     : hasCatatan
                     ? 'border-amber-300 shadow-sm bg-amber-50/30'
                     : 'border-slate-200 shadow-sm hover:border-slate-300'
                 } hover:shadow-md`}
+                style={{ animationDelay: getCardDelay(filteredData.indexOf(person)) }}
               >
                 {/* Header */}
                 <div
@@ -381,6 +454,13 @@ export default function DataTable({
                       <p className="text-sm text-slate-500 font-medium truncate mt-0.5">
                         {person.bidang || '-'}
                       </p>
+                      {(person.nik || person.no_hp || person.mata_kuliah) && (
+                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] text-slate-400">
+                          {person.nik && <span>NIK: {person.nik}</span>}
+                          {person.no_hp && <span>HP: {person.no_hp}</span>}
+                          {person.mata_kuliah && <span className="truncate">{person.mata_kuliah}</span>}
+                        </div>
+                      )}
                       <div className="mt-2.5 flex items-center gap-2 flex-wrap">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
@@ -413,12 +493,59 @@ export default function DataTable({
                 {/* Expanded Content */}
                 {isExpanded && (
                   <div className="bg-slate-50 rounded-b-2xl border-t border-slate-100">
-                    {/* Kualifikasi */}
-                    <div className="px-5 py-3 border-b border-slate-200/60 flex items-center gap-2 bg-white">
-                      <Award className="w-4 h-4 text-slate-400" />
-                      <span className="text-xs font-semibold text-slate-600">
-                        {person.kualifikasi || 'Kualifikasi'}
-                      </span>
+                    {/* Info Detail */}
+                    <div className="px-5 py-3 border-b border-slate-200/60 bg-white">
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+                        {person.nik && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-500">NIK:</span>
+                            <span className="text-slate-700">{person.nik}</span>
+                          </div>
+                        )}
+                        {person.no_str && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-500">No. STR:</span>
+                            <span className="text-slate-700">{person.no_str}</span>
+                          </div>
+                        )}
+                        {person.no_hp && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-500">No. HP:</span>
+                            <span className="text-slate-700">{person.no_hp}</span>
+                          </div>
+                        )}
+                        {person.tempat_lahir || person.tanggal_lahir ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-500">TTL:</span>
+                            <span className="text-slate-700">
+                              {person.tempat_lahir || ''}{person.tanggal_lahir ? `, ${new Date(person.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}
+                            </span>
+                          </div>
+                        ) : null}
+                        {person.alamat_ktp && (
+                          <div className="flex items-center gap-1.5 col-span-2">
+                            <span className="font-semibold text-slate-500">Alamat KTP:</span>
+                            <span className="text-slate-700">{person.alamat_ktp}</span>
+                          </div>
+                        )}
+                        {person.mata_kuliah && (
+                          <div className="flex items-center gap-1.5 col-span-2">
+                            <span className="font-semibold text-slate-500">Mata Kuliah:</span>
+                            <span className="text-slate-700">{person.mata_kuliah}</span>
+                          </div>
+                        )}
+                        {person.judul_thesis && (
+                          <div className="flex items-center gap-1.5 col-span-2">
+                            <span className="font-semibold text-slate-500">Judul Thesis:</span>
+                            <span className="text-slate-700">{person.judul_thesis}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <Award className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="font-semibold text-slate-500">Kualifikasi:</span>
+                          <span className="text-slate-700">{person.kualifikasi || '-'}</span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Checklist */}

@@ -126,6 +126,14 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS dosen_sarjana (
         id INT PRIMARY KEY AUTO_INCREMENT,
         nama VARCHAR(100) NOT NULL,
+        nik VARCHAR(20),
+        no_str VARCHAR(30),
+        no_hp VARCHAR(20),
+        alamat_ktp TEXT,
+        tempat_lahir VARCHAR(100),
+        tanggal_lahir DATE,
+        mata_kuliah VARCHAR(255),
+        judul_thesis VARCHAR(255),
         bidang VARCHAR(100),
         kualifikasi VARCHAR(100),
         dokumen JSON,
@@ -133,6 +141,19 @@ async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
+    `);
+
+    // Add new columns if they don't exist (migration for existing databases)
+    await connection.query(`
+      ALTER TABLE dosen_sarjana
+      ADD COLUMN IF NOT EXISTS nik VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS no_str VARCHAR(30),
+      ADD COLUMN IF NOT EXISTS no_hp VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS alamat_ktp TEXT,
+      ADD COLUMN IF NOT EXISTS tempat_lahir VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS tanggal_lahir DATE,
+      ADD COLUMN IF NOT EXISTS mata_kuliah VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS judul_thesis VARCHAR(255)
     `);
 
     // Create pembimbing_klinik table

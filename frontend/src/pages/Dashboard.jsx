@@ -83,6 +83,9 @@ export default function Dashboard() {
   const [photos, setPhotos] = useState({});
   const [documentKeys, setDocumentKeys] = useState({});
 
+  // Stagger animation delay per card index
+  const getCardDelay = (index) => `${Math.min(index * 40, 600)}ms`;
+
   const getActiveTab = () => {
     if (location.pathname === '/pembimbing-klinik') return 'klinik';
     if (location.pathname === '/tendik') return 'tendik';
@@ -212,6 +215,15 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
+      <style>{`
+        @keyframes card-enter {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .card-animate {
+          animation: card-enter 0.35s ease-out both;
+        }
+      `}</style>
       {/* Header */}
       <header className="sticky top-0 z-20 px-6 py-4 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
@@ -338,14 +350,15 @@ export default function Dashboard() {
 
             return (
               <div key={person.id}
-                className={`break-inside-avoid rounded-2xl border-2 shadow-sm p-5 cursor-pointer transition-all duration-200 mb-5 ${
+                className={`break-inside-avoid rounded-2xl border-2 shadow-sm p-5 cursor-pointer transition-all duration-200 mb-5 card-animate ${
                   isExpanded
                     ? 'border-emerald-400 shadow-lg ring-2 ring-emerald-200 bg-white'
                     : hasCatatan
                     ? 'border-amber-300 bg-amber-50/30 hover:shadow-md'
                     : 'border-slate-200 bg-white hover:shadow-md hover:border-slate-300'
                 }`}
-                onClick={toggleExpand}>
+                onClick={toggleExpand}
+                style={{ animationDelay: getCardDelay(filteredData.indexOf(person)) }}>
                 <div className="flex items-start gap-4">
                   <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
                     <CircularProgress percentage={progress.percentage} />

@@ -38,7 +38,7 @@ exports.getById = async (req, res) => {
 // Create new dosen sarjana
 exports.create = async (req, res) => {
   try {
-    const { nama, bidang, kualifikasi, dokumen, catatan } = req.body;
+    const { nama, nik, no_str, no_hp, alamat_ktp, tempat_lahir, tanggal_lahir, mata_kuliah, judul_thesis, bidang, kualifikasi, dokumen, catatan } = req.body;
 
     if (!nama) {
       return res.status(400).json({ error: 'Nama is required' });
@@ -65,8 +65,8 @@ exports.create = async (req, res) => {
     const finalDokumen = dokumen || defaultDokumen;
 
     const [result] = await pool.query(
-      'INSERT INTO dosen_sarjana (nama, bidang, kualifikasi, dokumen, catatan) VALUES (?, ?, ?, ?, ?)',
-      [nama, bidang || '', kualifikasi || '', JSON.stringify(finalDokumen), catatan || '']
+      'INSERT INTO dosen_sarjana (nama, nik, no_str, no_hp, alamat_ktp, tempat_lahir, tanggal_lahir, mata_kuliah, judul_thesis, bidang, kualifikasi, dokumen, catatan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [nama, nik || '', no_str || '', no_hp || '', alamat_ktp || '', tempat_lahir || '', tanggal_lahir || null, mata_kuliah || '', judul_thesis || '', bidang || '', kualifikasi || '', JSON.stringify(finalDokumen), catatan || '']
     );
 
     const [newRow] = await pool.query('SELECT * FROM dosen_sarjana WHERE id = ?', [result.insertId]);
@@ -84,7 +84,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nama, bidang, kualifikasi, dokumen, catatan } = req.body;
+    const { nama, nik, no_str, no_hp, alamat_ktp, tempat_lahir, tanggal_lahir, mata_kuliah, judul_thesis, bidang, kualifikasi, dokumen, catatan } = req.body;
 
     const [existing] = await pool.query('SELECT * FROM dosen_sarjana WHERE id = ?', [id]);
     if (existing.length === 0) {
@@ -95,6 +95,14 @@ exports.update = async (req, res) => {
     const values = [];
 
     if (nama !== undefined) { updates.push('nama = ?'); values.push(nama); }
+    if (nik !== undefined) { updates.push('nik = ?'); values.push(nik); }
+    if (no_str !== undefined) { updates.push('no_str = ?'); values.push(no_str); }
+    if (no_hp !== undefined) { updates.push('no_hp = ?'); values.push(no_hp); }
+    if (alamat_ktp !== undefined) { updates.push('alamat_ktp = ?'); values.push(alamat_ktp); }
+    if (tempat_lahir !== undefined) { updates.push('tempat_lahir = ?'); values.push(tempat_lahir); }
+    if (tanggal_lahir !== undefined) { updates.push('tanggal_lahir = ?'); values.push(tanggal_lahir || null); }
+    if (mata_kuliah !== undefined) { updates.push('mata_kuliah = ?'); values.push(mata_kuliah); }
+    if (judul_thesis !== undefined) { updates.push('judul_thesis = ?'); values.push(judul_thesis); }
     if (bidang !== undefined) { updates.push('bidang = ?'); values.push(bidang); }
     if (kualifikasi !== undefined) { updates.push('kualifikasi = ?'); values.push(kualifikasi); }
     if (dokumen !== undefined) { updates.push('dokumen = ?'); values.push(JSON.stringify(dokumen)); }

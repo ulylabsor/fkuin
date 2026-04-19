@@ -13,7 +13,8 @@ import {
   EyeOff,
   Search,
   FileText,
-  Award
+  Award,
+  Check
 } from 'lucide-react';
 import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys } from '../api/api';
 
@@ -83,6 +84,36 @@ export default function Dashboard() {
   const [expandedId, setExpandedId] = useState(null);
   const [photos, setPhotos] = useState({});
   const [documentKeys, setDocumentKeys] = useState({});
+  const [documentFiles, setDocumentFiles] = useState({});
+
+  const getFileUrl = (sdmType, personId, docKey) => {
+    const key = `${sdmType}_${personId}`;
+    const files = documentFiles[key];
+    if (!files) return null;
+    const doc = files.find(f => f.key === docKey);
+    return doc?.fileUrl || null;
+  };
+
+  // Load document files info
+  useEffect(() => {
+    const loadDocFiles = async () => {
+      try {
+        const [dsRes, pkRes, tdRes] = await Promise.all([
+          getPublicFileInfo('dosenSarjana'),
+          getPublicFileInfo('pembimbingKlinik'),
+          getPublicFileInfo('tendik')
+        ]);
+        const filesData = {};
+        if (dsRes.data.personnel) dsRes.data.personnel.forEach(p => { filesData[`dosenSarjana_${p.id}`] = p.documents; });
+        if (pkRes.data.personnel) pkRes.data.personnel.forEach(p => { filesData[`pembimbingKlinik_${p.id}`] = p.documents; });
+        if (tdRes.data.personnel) tdRes.data.personnel.forEach(p => { filesData[`tendik_${p.id}`] = p.documents; });
+        setDocumentFiles(filesData);
+      } catch (err) {
+        console.error('Error loading document files:', err);
+      }
+    };
+    loadDocFiles();
+  }, []);
 
   // Stagger animation delay per card index
   const getCardDelay = (index) => `${Math.min(index * 40, 600)}ms`;
@@ -468,20 +499,42 @@ export default function Dashboard() {
                       </div>
                     )}
 
-                    <div className="pt-3 border-t border-slate-100 space-y-3">
-                      {(documentKeys[activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
-                        const value = person.dokumen[doc.label] || person.dokumen[doc.key];
-                        return (
-                          <div key={doc.key} className="flex items-center gap-2 text-sm">
-                            {value ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                            ) : (
-                              <AlertCircle className="w-4 h-4 text-slate-300" />
-                            )}
-                            <span className={value ? 'text-slate-600' : 'text-slate-400'}>{doc.label}</span>
-                          </div>
-                        );
-                      })}
+                    <div className="pt-3 border-t border-slate-100">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileText className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dokumen</span>
+                        <span className="text-[10px] text-slate-400 ml-auto">
+                          {Object.values(person.dokumen || {}).filter(Boolean).length}/
+                          {Object.keys(person.dokumen || {}).length}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(documentKeys[activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
+                          const value = person.dokumen[doc.label] || person.dokumen[doc.key];
+                          const fileUrl = getFileUrl(activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik', person.id, doc.key);
+                          return value && fileUrl ? (
+                            <a
+                              key={doc.key}
+                              href={fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold border transition-colors bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                              title={`Klik untuk melihat ${doc.label}`}
+                            >
+                              <Check className="w-2.5 h-2.5" />
+                              {doc.label}
+                            </a>
+                          ) : (
+                            <span
+                              key={doc.key}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold border bg-white text-slate-400 border-slate-200"
+                            >
+                              <span className="w-2.5 h-2.5 inline-block" />
+                              {doc.label}
+                            </span>
+                          );
+                        })}
+                      </div>
                     </div>
                     {person.catatan && (
                       <div className="pt-3 border-t border-slate-100">

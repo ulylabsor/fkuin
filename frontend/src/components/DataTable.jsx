@@ -147,13 +147,6 @@ export default function DataTable({
     return cleanName.substring(0, 2).toUpperCase();
   }, []);
 
-  const handleDokumenChange = useCallback((docKey, value) => {
-    setEditData(prev => ({
-      ...prev,
-      dokumen: { ...prev.dokumen, [docKey]: value }
-    }));
-  }, []);
-
   const handleEdit = (person) => {
     setEditingId(person.id);
     setEditData({ ...person, dokumen: { ...person.dokumen } });
@@ -612,50 +605,30 @@ export default function DataTable({
                       </div>
                     )}
 
-                    {/* Checklist */}
-                    <div className="p-5 space-y-2.5">
-                      {Object.keys(person.dokumen).map((key) => (
-                        <div key={key} className="flex items-start gap-3">
-                          <div className="mt-0.5">
-                            {isEditing ? (
-                              <button
-                                onClick={() => handleDokumenChange(key, !editData.dokumen[key])}
-                                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                                  editData.dokumen[key]
-                                    ? 'bg-emerald-500 border-emerald-500 text-white'
-                                    : 'border-slate-300 hover:border-emerald-400'
-                                }`}
-                              >
-                                {editData.dokumen[key] && <Check className="w-3 h-3" />}
-                              </button>
-                            ) : (
-                              <div
-                                className={`w-5 h-5 rounded flex items-center justify-center ${
-                                  person.dokumen[key]
-                                    ? 'bg-emerald-500 text-white'
-                                    : 'bg-white border border-slate-300'
-                                }`}
-                              >
-                                {person.dokumen[key] && <Check className="w-3 h-3" />}
-                              </div>
-                            )}
+                    {/* Checklist - chip style */}
+                    <div className="px-4 py-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileText className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dokumen</span>
+                        <span className="text-[10px] text-slate-400 ml-auto">
+                          {Object.values(person.dokumen).filter(Boolean).length}/{Object.keys(person.dokumen).length}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {Object.keys(person.dokumen).map((key) => (
+                          <div
+                            key={key}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold border transition-colors ${
+                              person.dokumen[key]
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-white text-slate-400 border-slate-200'
+                            }`}
+                          >
+                            {person.dokumen[key] && <Check className="w-2.5 h-2.5" />}
+                            {key}
                           </div>
-                          <div className="flex-1">
-                            <span
-                              className={`text-sm font-medium ${
-                                person.dokumen[key] ? 'text-slate-700' : 'text-slate-500'
-                              }`}
-                            >
-                              {key}
-                            </span>
-                            {!person.dokumen[key] && (
-                              <p className="text-[10px] text-red-500 font-semibold mt-0.5">
-                                Wajib Dilengkapi
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
 
                     {/* Catatan */}

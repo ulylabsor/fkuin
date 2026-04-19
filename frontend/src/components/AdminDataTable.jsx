@@ -1,19 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Plus,
-  Edit2,
   Trash2,
   ChevronDown,
   Check,
-  X,
   Award,
-  Save,
   RefreshCw,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  FileUp,
+  X
 } from 'lucide-react';
+import DocumentModal from './DocumentModal';
+import { getPhoto } from '../api/api';
+
+// Urutan dokumen sesuai dengan modal upload
+const documentOrder = {
+  dosenSarjana: [
+    'Foto', 'KTP', 'Surat Perjanjian DT', 'Surat Penugasan Rector', 'Pernyataan EWMP',
+    'CV', 'SIP', 'STR', 'Sertifikat Pelatihan', 'Ijazah S1', 'Ijazah Profesi', 'Ijazah S2',
+    'Transkrip S1', 'Transkrip Profesi', 'Transkrip S2'
+  ],
+  pembimbingKlinik: [
+    'Foto', 'KTP', 'Surat Penugasan', 'CV', 'STR', 'SIP', 'Ijazah Spesialis',
+    'Serkam', 'Ijazah (S1-S2)', 'Transkrip'
+  ],
+  tendik: [
+    'Foto', 'KTP', 'Ijazah', 'Transkrip', 'Sertifikat', 'Surat Pernyataan'
+  ]
+};
+
+const getOrderedKeys = (dokumen, sdmType) => {
+  const order = documentOrder[sdmType] || Object.keys(dokumen);
+  return order.filter(key => key in dokumen);
+};
 
 const calculateProgress = (dokumen) => {
   if (!dokumen) return { completed: 0, total: 0, percentage: 0, isComplete: false };
@@ -77,18 +99,40 @@ export default function AdminDataTable({
   data,
   loading,
   onRefresh,
-  onSave,
+  onAdd,
   onDelete,
-  defaultDocuments
+  sdmType
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [newPerson, setNewPerson] = useState({ nama: '', bidang: '', kualifikasi: '' });
   const [expandedId, setExpandedId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [documentModal, setDocumentModal] = useState({
+    open: false,
+    personnelId: null,
+    personnelName: ''
+  });
+  const [photos, setPhotos] = useState({});
+
+  // Load photos for all personnel
+  useEffect(() => {
+    if (data && data.length > 0) {
+      data.forEach(async (person) => {
+        if (person.dokumen?.Foto && !photos[person.id]) {
+          try {
+            const res = await getPhoto(sdmType, person.id);
+            if (res.data.photoUrl) {
+              setPhotos(prev => ({ ...prev, [person.id]: res.data.photoUrl }));
+            }
+          } catch (err) {
+            console.error('Error loading photo:', err);
+          }
+        }
+      });
+    }
+  }, [data, sdmType]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -113,33 +157,12 @@ export default function AdminDataTable({
     return cleanName.substring(0, 2).toUpperCase();
   };
 
-  const handleEdit = (person) => {
-    setEditingId(person.id);
-    setEditData({ ...person, dokumen: { ...person.dokumen } });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditData(null);
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      await onSave(editingId, editData);
-      setEditingId(null);
-      setEditData(null);
-      showToast('Data berhasil diperbarui!', 'success');
-    } catch (err) {
-      console.error('Error saving:', err);
-      showToast('Gagal menyimpan data', 'error');
-    }
-  };
-
-  const handleDokumenChange = (docKey, value) => {
-    setEditData(prev => ({
-      ...prev,
-      dokumen: { ...prev.dokumen, [docKey]: value }
-    }));
+  const handleOpenDocuments = (person) => {
+    setDocumentModal({
+      open: true,
+      personnelId: person.id,
+      personnelName: person.nama
+    });
   };
 
   const handleAddPerson = async () => {
@@ -148,7 +171,7 @@ export default function AdminDataTable({
       return;
     }
     try {
-      await onSave(null, { ...newPerson, dokumen: defaultDocuments });
+      await onAdd({ ...newPerson });
       setNewPerson({ nama: '', bidang: '', kualifikasi: '' });
       setShowForm(false);
       showToast('Data berhasil ditambahkan!', 'success');
@@ -297,16 +320,13 @@ export default function AdminDataTable({
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {filteredData.map((person) => {
               const progress = calculateProgress(person.dokumen);
-              const isEditing = editingId === person.id;
               const isExpanded = expandedId === person.id;
 
               return (
                 <div
                   key={person.id}
                   className={`bg-white rounded-2xl border-2 ${
-                    isEditing
-                      ? 'border-emerald-500 shadow-md ring-2 ring-emerald-200'
-                      : (isExpanded ? 'border-slate-300 shadow-md' : 'border-slate-200 shadow-sm')
+                    isExpanded ? 'border-slate-300 shadow-md' : 'border-slate-200 shadow-sm'
                   } hover:shadow-md transition-all flex flex-col`}
                 >
                   {/* Header */}
@@ -317,6 +337,17 @@ export default function AdminDataTable({
                     <div className="flex items-start gap-4">
                       <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
                         <CircularProgress percentage={progress.percentage} />
+                        {photos[person.id] ? (
+                          <img
+                            src={photos[person.id]}
+                            alt={person.nama}
+                            className="absolute w-10 h-10 rounded-full object-cover border-2 border-white shadow"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
                         <div
                           className={`absolute w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
                             progress.isComplete
@@ -325,6 +356,7 @@ export default function AdminDataTable({
                               ? 'bg-amber-50 text-amber-600'
                               : 'bg-red-50 text-red-500'
                           }`}
+                          style={photos[person.id] ? { display: 'none' } : {}}
                         >
                           {getInitials(person.nama)}
                         </div>
@@ -359,41 +391,30 @@ export default function AdminDataTable({
 
                       <div className="px-5 py-3 max-h-48 overflow-y-auto">
                           <div className="grid grid-cols-2 gap-1">
-                            {Object.keys(person.dokumen).map((key) => (
-                              <div key={key} className={`flex items-center gap-1 p-1 rounded cursor-pointer transition-colors ${isEditing ? 'hover:bg-slate-100' : ''}`} onClick={() => isEditing && handleDokumenChange(key, !editData.dokumen[key])}>
+                            {getOrderedKeys(person.dokumen, sdmType).map((key) => (
+                              <div key={key} className="flex items-center gap-1 p-1 rounded">
                                 <div className={`w-4 h-4 rounded flex items-center justify-center ${
-                                  isEditing
-                                    ? (editData.dokumen[key] ? 'bg-emerald-500 text-white' : 'bg-white border-2 border-slate-300')
-                                    : (person.dokumen[key] ? 'bg-emerald-500 text-white' : 'bg-white border border-slate-300')
+                                  person.dokumen[key] ? 'bg-emerald-500 text-white' : 'bg-white border border-slate-300'
                                 }`}>
-                                  {(isEditing ? editData.dokumen[key] : person.dokumen[key]) && <Check className="w-2.5 h-2.5" />}
+                                  {person.dokumen[key] && <Check className="w-2.5 h-2.5" />}
                                 </div>
-                                <span className={`text-xs ${(isEditing ? editData.dokumen[key] : person.dokumen[key]) ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>{key}</span>
+                                <span className={`text-xs ${person.dokumen[key] ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{key}</span>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                      <div className="p-4 border-t border-slate-200/60 bg-white flex justify-between">
-                        {isEditing ? (
-                          <>
-                            <button onClick={handleCancelEdit} className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                              <X className="w-4 h-4" /> Batal
-                            </button>
-                            <button onClick={handleSaveEdit} className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">
-                              <Save className="w-4 h-4" /> Simpan
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button onClick={() => handleEdit(person)} className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                              <Edit2 className="w-4 h-4" /> Edit
-                            </button>
-                            <button onClick={() => handleDelete(person.id)} className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                              <Trash2 className="w-4 h-4" /> Hapus
-                            </button>
-                          </>
-                        )}
+                      <div className="p-4 border-t border-slate-200/60 bg-white">
+                        <div className="flex justify-between items-center mb-2">
+                          <button onClick={() => handleOpenDocuments(person)} className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
+                            <FileUp className="w-4 h-4" /> Upload Dokumen
+                          </button>
+                        </div>
+                        <div className="flex justify-end">
+                          <button onClick={() => handleDelete(person.id)} className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                            <Trash2 className="w-4 h-4" /> Hapus
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -412,6 +433,16 @@ export default function AdminDataTable({
       {toast && (
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
+
+      {/* Document Modal */}
+      <DocumentModal
+        isOpen={documentModal.open}
+        onClose={() => setDocumentModal(prev => ({ ...prev, open: false }))}
+        sdmType={sdmType}
+        personnelId={documentModal.personnelId}
+        personnelName={documentModal.personnelName}
+        onRefresh={onRefresh}
+      />
 
       <style>{`
         @keyframes slide-up {

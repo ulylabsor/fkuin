@@ -56,4 +56,32 @@ export const deleteTendik = (id) => api.delete(`/tendik/${id}`);
 // Stats
 export const getStats = () => api.get('/stats');
 
+// Dokumen
+export const getDocuments = (sdmType, personnelId) => api.get(`/dokumen/${sdmType}/${personnelId}`);
+export const getPhoto = (sdmType, personnelId) => api.get(`/dokumen/${sdmType}/${personnelId}/photo`);
+export const getPublicPhoto = (sdmType, personnelId) => api.get(`/public/photo/${sdmType}/${personnelId}`);
+export const getPublicDocumentKeys = (sdmType) => api.get(`/public/documents/${sdmType}`);
+
+export const uploadDocument = (formData) => {
+  // Create a new axios instance for uploads to avoid Content-Type issues
+  const uploadApi = axios.create({
+    baseURL: '/api'
+  });
+
+  // Add auth token
+  const token = localStorage.getItem('token');
+  if (token) {
+    uploadApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
+
+  // Don't set Content-Type - let axios set multipart/form-data with boundary
+  return uploadApi.post('/dokumen/upload', formData);
+};
+
+export const deleteDocument = (sdmType, personnelId, documentKey) =>
+  api.delete(`/dokumen/${sdmType}/${personnelId}/${documentKey}`);
+
+export const deleteAllDocuments = (sdmType, personnelId) =>
+  api.delete(`/dokumen/${sdmType}/${personnelId}`);
+
 export default api;

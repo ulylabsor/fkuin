@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { deleteAllFiles } = require('../utils/fileUtils');
 
 // Get all dosen sarjana
 exports.getAll = async (req, res) => {
@@ -44,6 +45,7 @@ exports.create = async (req, res) => {
     }
 
     const defaultDokumen = {
+      "Foto": false,
       "KTP": false,
       "Surat Perjanjian DT": false,
       "Surat Penugasan Rector": false,
@@ -119,6 +121,10 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Delete uploaded files first
+    deleteAllFiles('dosenSarjana', id);
+
     const [result] = await pool.query('DELETE FROM dosen_sarjana WHERE id = ?', [id]);
 
     if (result.affectedRows === 0) {

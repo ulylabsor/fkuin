@@ -77,6 +77,7 @@ export default function DosenSarjana() {
         onSave={handleSave}
         onDelete={handleDelete}
         defaultDocuments={defaultDocuments}
+        sdmType="dosenSarjana"
       />
     </Layout>
   );

@@ -1,13 +1,13 @@
 const pool = require('../config/database');
 
 const docSarjanaLengkap = {
-  "KTP": true, "Surat Perjanjian DT": true, "Surat Penugasan Rector": true, "Pernyataan EWMP": true,
+  "Foto": false, "KTP": true, "Surat Perjanjian DT": true, "Surat Penugasan Rector": true, "Pernyataan EWMP": true,
   "CV": true, "SIP": true, "STR": true, "Sertifikat Pelatihan": true, "Ijazah S1": true,
   "Ijazah Profesi": true, "Ijazah S2": true, "Transkrip S1": true, "Transkrip Profesi": true, "Transkrip S2": true
 };
 
 const docSarjanaKurang = {
-  "KTP": true, "Surat Perjanjian DT": true, "Surat Penugasan Rector": true, "Pernyataan EWMP": true,
+  "Foto": false, "KTP": true, "Surat Perjanjian DT": true, "Surat Penugasan Rector": true, "Pernyataan EWMP": true,
   "CV": true, "SIP": false, "STR": true, "Sertifikat Pelatihan": false, "Ijazah S1": true,
   "Ijazah Profesi": true, "Ijazah S2": true, "Transkrip S1": true, "Transkrip Profesi": true, "Transkrip S2": false
 };
@@ -42,43 +42,43 @@ const dosenSarjanaData = [
 ];
 
 const pembimbingKlinikData = [
-  { nama: "dr. DWI Indira Setyorini, Sp.PD", bidang: "Spesialis Penyakit Dalam", kualifikasi: "Spesialis Penyakit Dalam", dokumen: { "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
-  { nama: "Dr. Yanuar Hidayatmo, Sp.B", bidang: "Spesialis Bedah", kualifikasi: "Spesialis Bedah", dokumen: { "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
-  { nama: "dr. Herti Perdana Putri, Sp. A.M.Kes", bidang: "Spesialis Anak", kualifikasi: "Spesialis Anak", dokumen: { "KTP": false, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } },
-  { nama: "dr. Hj. Asdaria Tenri, Sp.OG", bidang: "Kandungan", kualifikasi: "Spesialis Obstetri dan Ginekologi", dokumen: { "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
-  { nama: "dr. Galuh Absari Utomo, Sp.N", bidang: "Penyakit Syaraf", kualifikasi: "Spesialis Neurologi", dokumen: { "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
-  { nama: "dr. R. A. Mulya Liansari, Sp.KJ", bidang: "Kesehatan Jiwa", kualifikasi: "Spesialis Kedokteran Jiwa", dokumen: { "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } },
-  { nama: "dr. FifA Argentina, Sp. KK", bidang: "Kulit & Kelamin", kualifikasi: "Spesialis Kulit dan Kelamin", dokumen: { "KTP": false, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
-  { nama: "dr. Suryadi, Sp.M", bidang: "Spesialis Mata", kualifikasi: "Spesialis Penyakit Mata", dokumen: { "KTP": true, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } },
-  { nama: "dr. Sari Nurfaizah, Sp.THT", bidang: "Spesialis THT", kualifikasi: "Spesialis THT-KL", dokumen: { "KTP": true, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": true, "Ijazah (S1-S2)": true, "Transkrip": false } },
-  { nama: "dr. Muhamad Salim, Sp.Rad", bidang: "Spesialis Radiologi", kualifikasi: "Spesialis Radiologi", dokumen: { "KTP": true, "Surat Penugasan": true, "CV": false, "STR": false, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
-  { nama: "dr. Indra Syakti Nasution, Sp.KF", bidang: "Spesialis Forensik", kualifikasi: "Spesialis Kedokteran Forensik", dokumen: { "KTP": true, "Surat Penugasan": true, "CV": false, "STR": false, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
-  { nama: "dr. Edrian Zulkarnain, Sp.JP", bidang: "Spesialis Jantung", kualifikasi: "Spesialis Jantung", dokumen: { "KTP": true, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
-  { nama: "dr. Afprimadhona, Sp.An", bidang: "Spesialis Anastesi", kualifikasi: "Spesialis Anestesiologi", dokumen: { "KTP": true, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } }
+  { nama: "dr. DWI Indira Setyorini, Sp.PD", bidang: "Spesialis Penyakit Dalam", kualifikasi: "Spesialis Penyakit Dalam", dokumen: { "Foto": false, "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
+  { nama: "Dr. Yanuar Hidayatmo, Sp.B", bidang: "Spesialis Bedah", kualifikasi: "Spesialis Bedah", dokumen: { "Foto": false, "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
+  { nama: "dr. Herti Perdana Putri, Sp. A.M.Kes", bidang: "Spesialis Anak", kualifikasi: "Spesialis Anak", dokumen: { "Foto": false, "KTP": false, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } },
+  { nama: "dr. Hj. Asdaria Tenri, Sp.OG", bidang: "Kandungan", kualifikasi: "Spesialis Obstetri dan Ginekologi", dokumen: { "Foto": false, "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
+  { nama: "dr. Galuh Absari Utomo, Sp.N", bidang: "Penyakit Syaraf", kualifikasi: "Spesialis Neurologi", dokumen: { "Foto": false, "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": true } },
+  { nama: "dr. R. A. Mulya Liansari, Sp.KJ", bidang: "Kesehatan Jiwa", kualifikasi: "Spesialis Kedokteran Jiwa", dokumen: { "Foto": false, "KTP": false, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } },
+  { nama: "dr. FifA Argentina, Sp. KK", bidang: "Kulit & Kelamin", kualifikasi: "Spesialis Kulit dan Kelamin", dokumen: { "Foto": false, "KTP": false, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
+  { nama: "dr. Suryadi, Sp.M", bidang: "Spesialis Mata", kualifikasi: "Spesialis Penyakit Mata", dokumen: { "Foto": false, "KTP": true, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } },
+  { nama: "dr. Sari Nurfaizah, Sp.THT", bidang: "Spesialis THT", kualifikasi: "Spesialis THT-KL", dokumen: { "Foto": false, "KTP": true, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": true, "Ijazah (S1-S2)": true, "Transkrip": false } },
+  { nama: "dr. Muhamad Salim, Sp.Rad", bidang: "Spesialis Radiologi", kualifikasi: "Spesialis Radiologi", dokumen: { "Foto": false, "KTP": true, "Surat Penugasan": true, "CV": false, "STR": false, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
+  { nama: "dr. Indra Syakti Nasution, Sp.KF", bidang: "Spesialis Forensik", kualifikasi: "Spesialis Kedokteran Forensik", dokumen: { "Foto": false, "KTP": true, "Surat Penugasan": true, "CV": false, "STR": false, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
+  { nama: "dr. Edrian Zulkarnain, Sp.JP", bidang: "Spesialis Jantung", kualifikasi: "Spesialis Jantung", dokumen: { "Foto": false, "KTP": true, "Surat Penugasan": true, "CV": false, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": false, "Transkrip": false } },
+  { nama: "dr. Afprimadhona, Sp.An", bidang: "Spesialis Anastesi", kualifikasi: "Spesialis Anestesiologi", dokumen: { "Foto": false, "KTP": true, "Surat Penugasan": true, "CV": true, "STR": true, "SIP": true, "Ijazah Spesialis": false, "Serkam": false, "Ijazah (S1-S2)": true, "Transkrip": false } }
 ];
 
 const tendikData = [
-  { nama: "Tri Fatmawati, S.K.M", bidang: "Admin Prodi", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Mega Agistia Ipanka, SE", bidang: "Admin Profesi", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Berta Erawanti, S.Si", bidang: "Admin Kependidikan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Muhammad Imron, S.Kom", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Iza Yusmita, S.Kom", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Muhamad Iqbal Wahyudi, S.Pd", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Aljier Wira Praja, S.Pd", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Arwin Arianto, S.Pd", bidang: "Admin TI", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": false, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Rofiqo, S.Hum", bidang: "Admin Perpustakaan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Wahyu Tri Ambarini, S.TP", bidang: "Admin Kemahasiswaan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Sherly Jannati, S.Pd", bidang: "Admin Kemahasiswaan", kualifikasi: "Sarjana", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Maulidyah Nur, S.Tr.Kes", bidang: "Laboran Anatomi", kualifikasi: "D4", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Khoirunnisa, S.Tr.Kes", bidang: "Laboran Biokimia", kualifikasi: "D4", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Juliyana Jowen, A.Md.Kes", bidang: "Laboran Histologi", kualifikasi: "D3", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Sherina Ananda, S.Tr.Kes", bidang: "Laboran Biologi", kualifikasi: "D4", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Putri Alya Diani, S.Tr.Kes", bidang: "Laboran Fisiologi", kualifikasi: "D4", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Nyayu Shafa Zakiyah, A.Md", bidang: "Laboran Mikrobiologi", kualifikasi: "D3", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Maulaya Hakimmah, S.Tr.Kes", bidang: "Laboran Farmakologi", kualifikasi: "D4", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
-  { nama: "Hesty Mulyana, A.Md.Kes", bidang: "Laboran Parasitologi", kualifikasi: "D3", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Syaharanita Fitria, A.Md.Kes", bidang: "Laboran Patologi", kualifikasi: "D3", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
-  { nama: "Putri Permatasari, AMAK", bidang: "Laboran Patologi Klinik", kualifikasi: "Diploma", dokumen: { "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } }
+  { nama: "Tri Fatmawati, S.K.M", bidang: "Admin Prodi", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Mega Agistia Ipanka, SE", bidang: "Admin Profesi", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Berta Erawanti, S.Si", bidang: "Admin Kependidikan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Muhammad Imron, S.Kom", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Iza Yusmita, S.Kom", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Muhamad Iqbal Wahyudi, S.Pd", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Aljier Wira Praja, S.Pd", bidang: "Admin Keuangan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Arwin Arianto, S.Pd", bidang: "Admin TI", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": false, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Rofiqo, S.Hum", bidang: "Admin Perpustakaan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Wahyu Tri Ambarini, S.TP", bidang: "Admin Kemahasiswaan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Sherly Jannati, S.Pd", bidang: "Admin Kemahasiswaan", kualifikasi: "Sarjana", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Maulidyah Nur, S.Tr.Kes", bidang: "Laboran Anatomi", kualifikasi: "D4", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Khoirunnisa, S.Tr.Kes", bidang: "Laboran Biokimia", kualifikasi: "D4", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Juliyana Jowen, A.Md.Kes", bidang: "Laboran Histologi", kualifikasi: "D3", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Sherina Ananda, S.Tr.Kes", bidang: "Laboran Biologi", kualifikasi: "D4", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Putri Alya Diani, S.Tr.Kes", bidang: "Laboran Fisiologi", kualifikasi: "D4", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Nyayu Shafa Zakiyah, A.Md", bidang: "Laboran Mikrobiologi", kualifikasi: "D3", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Maulaya Hakimmah, S.Tr.Kes", bidang: "Laboran Farmakologi", kualifikasi: "D4", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": true, "Surat Pernyataan": true } },
+  { nama: "Hesty Mulyana, A.Md.Kes", bidang: "Laboran Parasitologi", kualifikasi: "D3", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Syaharanita Fitria, A.Md.Kes", bidang: "Laboran Patologi", kualifikasi: "D3", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } },
+  { nama: "Putri Permatasari, AMAK", bidang: "Laboran Patologi Klinik", kualifikasi: "Diploma", dokumen: { "Foto": false, "KTP": true, "Ijazah": true, "Transkrip": true, "Sertifikat": false, "Surat Pernyataan": true } }
 ];
 
 exports.seedData = async () => {

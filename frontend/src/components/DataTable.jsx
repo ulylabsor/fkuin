@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Search,
   Plus,
@@ -13,6 +13,7 @@ import {
   Save,
   RefreshCw
 } from 'lucide-react';
+import { getPublicPhoto } from '../api/api';
 
 const calculateProgress = (dokumen) => {
   if (!dokumen) return { completed: 0, total: 0, percentage: 0, isComplete: false };
@@ -71,7 +72,8 @@ export default function DataTable({
   onSave,
   onDelete,
   documentLabels,
-  defaultDocuments
+  defaultDocuments,
+  sdmType
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -80,6 +82,31 @@ export default function DataTable({
   const [showForm, setShowForm] = useState(false);
   const [newPerson, setNewPerson] = useState({ nama: '', bidang: '', kualifikasi: '' });
   const [expandedId, setExpandedId] = useState(null);
+  const [photos, setPhotos] = useState({});
+  const loadedPhotosRef = useRef(new Set());
+
+  // Load photos for all personnel
+  useEffect(() => {
+    if (data && data.length > 0 && sdmType) {
+      const loadPhotos = async () => {
+        for (const person of data) {
+          const key = `${sdmType}_${person.id}`;
+          if (person.dokumen?.Foto && !loadedPhotosRef.current.has(key)) {
+            loadedPhotosRef.current.add(key);
+            try {
+              const res = await getPublicPhoto(sdmType, person.id);
+              if (res.data.photoUrl) {
+                setPhotos(prev => ({ ...prev, [key]: res.data.photoUrl }));
+              }
+            } catch (err) {
+              console.error('Error loading photo:', err);
+            }
+          }
+        }
+      };
+      loadPhotos();
+    }
+  }, [data, sdmType]);
 
   const filteredData = data.filter(person => {
     const matchSearch = person.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -269,6 +296,7 @@ export default function DataTable({
             const progress = calculateProgress(person.dokumen);
             const isEditing = editingId === person.id;
             const isExpanded = expandedId === person.id;
+            const photoKey = `${sdmType}_${person.id}`;
 
             return (
               <div
@@ -286,6 +314,17 @@ export default function DataTable({
                     {/* Avatar */}
                     <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
                       <CircularProgress percentage={progress.percentage} />
+                      {photos[photoKey] ? (
+                        <img
+                          src={photos[photoKey]}
+                          alt={person.nama}
+                          className="absolute w-10 h-10 rounded-full object-cover border-2 border-white shadow"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
                       <div
                         className={`absolute w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
                           progress.isComplete
@@ -294,6 +333,7 @@ export default function DataTable({
                             ? 'bg-amber-50 text-amber-600'
                             : 'bg-red-50 text-red-500'
                         }`}
+                        style={photos[photoKey] ? { display: 'none' } : {}}
                       >
                         {getInitials(person.nama)}
                       </div>

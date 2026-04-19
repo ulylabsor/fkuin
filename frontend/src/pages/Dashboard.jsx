@@ -13,7 +13,7 @@ import {
   EyeOff,
   Search
 } from 'lucide-react';
-import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik } from '../api/api';
+import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys } from '../api/api';
 
 const calculateProgress = (dokumen) => {
   if (!dokumen) return { completed: 0, total: 0, percentage: 0, isComplete: false };
@@ -64,6 +64,8 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyIncomplete, setShowOnlyIncomplete] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+  const [photos, setPhotos] = useState({});
+  const [documentKeys, setDocumentKeys] = useState({});
 
   const getActiveTab = () => {
     if (location.pathname === '/pembimbing-klinik') return 'klinik';
@@ -75,7 +77,76 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadData();
+    loadDocumentKeys();
   }, []);
+
+  const loadDocumentKeys = async () => {
+    try {
+      const [dsRes, pkRes, tdRes] = await Promise.all([
+        getPublicDocumentKeys('dosenSarjana'),
+        getPublicDocumentKeys('pembimbingKlinik'),
+        getPublicDocumentKeys('tendik')
+      ]);
+      setDocumentKeys({
+        dosenSarjana: dsRes.data.documents,
+        pembimbingKlinik: pkRes.data.documents,
+        tendik: tdRes.data.documents
+      });
+    } catch (err) {
+      console.error('Error loading document keys:', err);
+    }
+  };
+
+  // Load photos
+  useEffect(() => {
+    if (dosenSarjana.length > 0 || pembimbingKlinik.length > 0 || tendik.length > 0) {
+      const loadPhotos = async () => {
+        // Load for Dosen Sarjana
+        for (const person of dosenSarjana) {
+          const key = `dosenSarjana_${person.id}`;
+          if (person.dokumen?.Foto && !photos[key]) {
+            try {
+              const res = await getPublicPhoto('dosenSarjana', person.id);
+              if (res.data.photoUrl) {
+                setPhotos(prev => ({ ...prev, [key]: res.data.photoUrl }));
+              }
+            } catch (err) {
+              console.error('Error loading photo:', err);
+            }
+          }
+        }
+        // Load for Pembimbing Klinik
+        for (const person of pembimbingKlinik) {
+          const key = `pembimbingKlinik_${person.id}`;
+          if (person.dokumen?.Foto && !photos[key]) {
+            try {
+              const res = await getPublicPhoto('pembimbingKlinik', person.id);
+              if (res.data.photoUrl) {
+                setPhotos(prev => ({ ...prev, [key]: res.data.photoUrl }));
+              }
+            } catch (err) {
+              console.error('Error loading photo:', err);
+            }
+          }
+        }
+        // Load for Tendik
+        for (const person of tendik) {
+          const key = `tendik_${person.id}`;
+          if (person.dokumen?.Foto && !photos[key]) {
+            try {
+              const res = await getPublicPhoto('tendik', person.id);
+              if (res.data.photoUrl) {
+                setPhotos(prev => ({ ...prev, [key]: res.data.photoUrl }));
+              }
+            } catch (err) {
+              console.error('Error loading photo:', err);
+            }
+          }
+        }
+      };
+      loadPhotos();
+    }
+  }, [dosenSarjana, pembimbingKlinik, tendik]);
 
   const loadData = async () => {
     try {
@@ -242,6 +313,7 @@ export default function Dashboard() {
           {filteredData.map((person) => {
             const progress = calculateProgress(person.dokumen);
             const isExpanded = expandedId === person.id;
+            const photoKey = `${activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'}_${person.id}`;
             return (
               <div key={person.id}
                 className={`bg-white rounded-2xl border border-slate-200 shadow-sm p-5 cursor-pointer hover:shadow-md hover:border-slate-300 transition-all ${isExpanded ? 'ring-2 ring-emerald-500' : ''}`}
@@ -249,7 +321,21 @@ export default function Dashboard() {
                 <div className="flex items-start gap-4">
                   <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
                     <CircularProgress percentage={progress.percentage} />
-                    <div className={`absolute w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${progress.isComplete ? 'bg-emerald-50 text-emerald-600' : progress.percentage >= 50 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}>
+                    {photos[photoKey] ? (
+                      <img
+                        src={photos[photoKey]}
+                        alt={person.nama}
+                        className="absolute w-10 h-10 rounded-full object-cover border-2 border-white shadow"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className={`absolute w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${progress.isComplete ? 'bg-emerald-50 text-emerald-600' : progress.percentage >= 50 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}
+                      style={photos[photoKey] ? { display: 'none' } : {}}
+                    >
                       {getInitials(person.nama)}
                     </div>
                   </div>
@@ -268,16 +354,19 @@ export default function Dashboard() {
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <p className="text-xs font-semibold text-slate-500 mb-2">Kualifikasi: {person.kualifikasi || '-'}</p>
                     <div className="space-y-1">
-                      {Object.entries(person.dokumen).map(([key, value]) => (
-                        <div key={key} className="flex items-center gap-2 text-sm">
-                          {value ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                          ) : (
-                            <AlertCircle className="w-4 h-4 text-slate-300" />
-                          )}
-                          <span className={value ? 'text-slate-600' : 'text-slate-400'}>{key}</span>
-                        </div>
-                      ))}
+                      {(documentKeys[activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
+                        const value = person.dokumen[doc.label] || person.dokumen[doc.key];
+                        return (
+                          <div key={doc.key} className="flex items-center gap-2 text-sm">
+                            {value ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-slate-300" />
+                            )}
+                            <span className={value ? 'text-slate-600' : 'text-slate-400'}>{doc.label}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import AdminDataTable from '../components/AdminDataTable';
-import { getPembimbingKlinik, createPembimbingKlinik, updatePembimbingKlinik, deletePembimbingKlinik } from '../api/api';
-
-const defaultDocuments = {
-  "KTP": false, "Surat Penugasan": false, "CV": false, "STR": false,
-  "SIP": false, "Ijazah Spesialis": false, "Serkam": false,
-  "Ijazah (S1-S2)": false, "Transkrip": false
-};
+import { getPembimbingKlinik, createPembimbingKlinik, deletePembimbingKlinik } from '../api/api';
 
 export default function AdminPembimbingKlinik() {
   const [data, setData] = useState([]);
@@ -28,17 +22,13 @@ export default function AdminPembimbingKlinik() {
     }
   };
 
-  const handleSave = async (id, editData) => {
+  const handleAdd = async (newPerson) => {
     try {
-      if (id) {
-        await updatePembimbingKlinik(id, editData);
-      } else {
-        await createPembimbingKlinik(editData);
-      }
+      await createPembimbingKlinik(newPerson);
       await loadData();
     } catch (err) {
-      console.error('Error saving data:', err);
-      alert('Gagal menyimpan data');
+      console.error('Error adding data:', err);
+      alert('Gagal menambahkan data');
     }
   };
 
@@ -60,9 +50,9 @@ export default function AdminPembimbingKlinik() {
         data={data}
         loading={loading}
         onRefresh={loadData}
-        onSave={handleSave}
+        onAdd={handleAdd}
         onDelete={handleDelete}
-        defaultDocuments={defaultDocuments}
+        sdmType="pembimbingKlinik"
       />
     </AdminLayout>
   );

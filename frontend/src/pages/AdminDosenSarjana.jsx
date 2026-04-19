@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import AdminDataTable from '../components/AdminDataTable';
-import { getDosenSarjana, createDosenSarjana, updateDosenSarjana, deleteDosenSarjana } from '../api/api';
-
-const defaultDocuments = {
-  "KTP": false, "Surat Perjanjian DT": false, "Surat Penugasan Rector": false,
-  "Pernyataan EWMP": false, "CV": false, "SIP": false, "STR": false,
-  "Sertifikat Pelatihan": false, "Ijazah S1": false, "Ijazah Profesi": false,
-  "Ijazah S2": false, "Transkrip S1": false, "Transkrip Profesi": false, "Transkrip S2": false
-};
+import { getDosenSarjana, createDosenSarjana, deleteDosenSarjana } from '../api/api';
 
 export default function AdminDosenSarjana() {
   const [data, setData] = useState([]);
@@ -29,17 +22,13 @@ export default function AdminDosenSarjana() {
     }
   };
 
-  const handleSave = async (id, editData) => {
+  const handleAdd = async (newPerson) => {
     try {
-      if (id) {
-        await updateDosenSarjana(id, editData);
-      } else {
-        await createDosenSarjana(editData);
-      }
+      await createDosenSarjana(newPerson);
       await loadData();
     } catch (err) {
-      console.error('Error saving data:', err);
-      alert('Gagal menyimpan data');
+      console.error('Error adding data:', err);
+      alert('Gagal menambahkan data');
     }
   };
 
@@ -61,9 +50,9 @@ export default function AdminDosenSarjana() {
         data={data}
         loading={loading}
         onRefresh={loadData}
-        onSave={handleSave}
+        onAdd={handleAdd}
         onDelete={handleDelete}
-        defaultDocuments={defaultDocuments}
+        sdmType="dosenSarjana"
       />
     </AdminLayout>
   );

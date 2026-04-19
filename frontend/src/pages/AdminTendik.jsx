@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import AdminDataTable from '../components/AdminDataTable';
-import { getTendik, createTendik, updateTendik, deleteTendik } from '../api/api';
-
-const defaultDocuments = {
-  "KTP": false, "Ijazah": false, "Transkrip": false, "Sertifikat": false, "Surat Pernyataan": false
-};
+import { getTendik, createTendik, deleteTendik } from '../api/api';
 
 export default function AdminTendik() {
   const [data, setData] = useState([]);
@@ -26,17 +22,13 @@ export default function AdminTendik() {
     }
   };
 
-  const handleSave = async (id, editData) => {
+  const handleAdd = async (newPerson) => {
     try {
-      if (id) {
-        await updateTendik(id, editData);
-      } else {
-        await createTendik(editData);
-      }
+      await createTendik(newPerson);
       await loadData();
     } catch (err) {
-      console.error('Error saving data:', err);
-      alert('Gagal menyimpan data');
+      console.error('Error adding data:', err);
+      alert('Gagal menambahkan data');
     }
   };
 
@@ -58,9 +50,9 @@ export default function AdminTendik() {
         data={data}
         loading={loading}
         onRefresh={loadData}
-        onSave={handleSave}
+        onAdd={handleAdd}
         onDelete={handleDelete}
-        defaultDocuments={defaultDocuments}
+        sdmType="tendik"
       />
     </AdminLayout>
   );

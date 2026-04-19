@@ -76,6 +76,7 @@ export default function PembimbingKlinik() {
         onSave={handleSave}
         onDelete={handleDelete}
         defaultDocuments={defaultDocuments}
+        sdmType="pembimbingKlinik"
       />
     </Layout>
   );

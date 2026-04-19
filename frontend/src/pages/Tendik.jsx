@@ -74,6 +74,7 @@ export default function Tendik() {
         onSave={handleSave}
         onDelete={handleDelete}
         defaultDocuments={defaultDocuments}
+        sdmType="tendik"
       />
     </Layout>
   );

@@ -18,6 +18,33 @@ import {
 } from 'lucide-react';
 import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys, getPublicFileInfo } from '../api/api';
 
+// Mapping folder key (underscore) ke database key (dengan spasi)
+const folderKeyToDbKey = {
+  'Foto': 'Foto',
+  'KTP': 'KTP',
+  'Surat_Perjanjian_Dosen_Tetap': 'Surat Perjanjian DT',
+  'Surat_Penugasan_Rektor': 'Surat Penugasan Rector',
+  'Surat_Pernyataan_EWMP': 'Pernyataan EWMP',
+  'CV': 'CV',
+  'SIP': 'SIP (opsional)',
+  'STR': 'STR',
+  'Sertifikat_Pelatihan': 'Sertifikat Pelatihan',
+  'Ijazah_S1': 'Ijazah S1',
+  'Ijazah_Profesi': 'Ijazah Profesi',
+  'Ijazah_S2': 'Ijazah S2',
+  'Transkrip_S1': 'Transkrip S1',
+  'Transkrip_Profesi': 'Transkrip Profesi',
+  'Transkrip_S2': 'Transkrip S2',
+  'Surat_Penugasan_Profesor': 'Surat Penugasan',
+  'Ijazah_Spesialis': 'Ijazah Spesialis',
+  'Sertifikat_Kompetensi': 'Serkam',
+  'Ijazah_S1_S2_Profesi': 'Ijazah (S1-S2)',
+  'Transkrip_S1_S2_Profesi': 'Transkrip',
+  'Ijazah_S1_S2_S3': 'Ijazah',
+  'Transkrip_S1_S2_S3': 'Transkrip',
+  'Surat_Pernyataan': 'Surat Pernyataan'
+};
+
 const calculateProgress = (dokumen) => {
   if (!dokumen) return { completed: 0, total: 0, percentage: 0, isComplete: false };
   const keys = Object.keys(dokumen);
@@ -510,7 +537,8 @@ export default function Dashboard() {
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {(documentKeys[activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
-                          const value = person.dokumen[doc.label] || person.dokumen[doc.key];
+                          const dbKey = folderKeyToDbKey[doc.key] || doc.key;
+                          const value = person.dokumen?.[dbKey];
                           const fileUrl = getFileUrl(activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik', person.id, doc.key);
                           return value && fileUrl ? (
                             <a

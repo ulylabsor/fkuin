@@ -11,20 +11,34 @@ import {
   X,
   Bell
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getStats } from '../api/api';
 
 const menuItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/dosen-sarjana', label: 'Dosen Sarjana', icon: GraduationCap },
+  { path: '/dosen-tetap', label: 'Dosen Tetap', icon: GraduationCap },
   { path: '/pembimbing-klinik', label: 'Pembimbing Klinik', icon: Stethoscope },
   { path: '/tendik', label: 'Tendik & Laboran', icon: Users },
 ];
 
-export default function Layout({ children, stats }) {
+export default function Layout({ children }) {
   const { admin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await getStats();
+        setStats(res.data);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -48,9 +62,8 @@ export default function Layout({ children, stats }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 md:z-10 w-[260px] bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out transform ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } md:relative flex flex-col h-full shadow-2xl md:shadow-none`}
+        className={`fixed inset-y-0 left-0 z-50 md:z-10 w-[260px] bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          } md:relative flex flex-col h-full shadow-2xl md:shadow-none`}
       >
         {/* Logo */}
         <div className="p-6 md:p-8 flex items-center gap-3">
@@ -77,11 +90,10 @@ export default function Layout({ children, stats }) {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium text-sm ${
-                    isActive
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium text-sm ${isActive
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon
@@ -99,7 +111,18 @@ export default function Layout({ children, stats }) {
         <div className="p-6">
           <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
             <p className="text-xs font-semibold text-slate-700 mb-1">Periode Sinkronisasi</p>
-            <p className="text-xs text-slate-500 mb-3">Tahun Akademik 2026/2027</p>
+            <p className="text-xs text-slate-500 mb-2">
+              {stats?.lastUpdated
+                ? new Date(stats.lastUpdated).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+              }
+            </p>
+            <p className="text-xs text-slate-400 mb-3">
+              {stats
+                ? `${(stats.dosenTetap?.total || 0) + (stats.pembimbingKlinik?.total || 0) + (stats.tendik?.total || 0)} Total SDM`
+                : 'Memuat data...'
+              }
+            </p>
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded w-max border border-emerald-100">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

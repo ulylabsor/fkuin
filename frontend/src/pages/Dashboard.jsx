@@ -602,7 +602,11 @@ export default function Dashboard() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-slate-500">
-          <p>Periode: Tahun Akademik 2026/2027 | Fakultas Kedokteran UIN Raden Fatah Palembang</p>
+          <p>
+            Update: {stats?.lastUpdated
+              ? new Date(stats.lastUpdated).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+              : 'Memuat...'} | Fakultas Kedokteran UIN Raden Fatah Palembang
+          </p>
         </div>
       </main>
 

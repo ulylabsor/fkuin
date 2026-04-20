@@ -106,7 +106,10 @@ export default function Login() {
         </div>
 
         <p className="text-center text-sm text-slate-400 mt-6">
-          Tahun Akademik 2026/2027
+          {localStorage.getItem('lastLogin')
+            ? `Login Terakhir: ${new Date(localStorage.getItem('lastLogin')).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+            : 'Fakultas Kedokteran UIN Raden Fatah Palembang'
+          }
         </p>
       </div>
     </div>

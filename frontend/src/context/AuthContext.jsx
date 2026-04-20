@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }) => {
     const res = await apiLogin(username, password);
     localStorage.setItem('token', res.data.token);
     localStorage.setItem('admin', JSON.stringify(res.data.admin));
+    localStorage.setItem('lastLogin', new Date().toISOString());
     setAdmin(res.data.admin);
     return res.data;
   };

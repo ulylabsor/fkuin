@@ -20,7 +20,7 @@ app.use(express.json());
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
-const dosenSarjanaRoutes = require('./routes/dosenSarjanaRoutes');
+const dosenTetapRoutes = require('./routes/dosenTetapRoutes');
 const pembimbingKlinikRoutes = require('./routes/pembimbingKlinikRoutes');
 const tendikRoutes = require('./routes/tendikRoutes');
 const statsRoutes = require('./routes/statsRoutes');
@@ -29,7 +29,7 @@ const { createDefaultAdmin } = require('./controllers/authController');
 const { seedData } = require('./controllers/seedController');
 
 app.use('/api/auth', authRoutes);
-app.use('/api/dosen-sarjana', dosenSarjanaRoutes);
+app.use('/api/dosen-tetap', dosenTetapRoutes);
 app.use('/api/pembimbing-klinik', pembimbingKlinikRoutes);
 app.use('/api/tendik', tendikRoutes);
 app.use('/api/stats', statsRoutes);

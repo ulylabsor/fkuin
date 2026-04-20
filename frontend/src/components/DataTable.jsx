@@ -10,9 +10,11 @@ import {
   Award,
   Save,
   RefreshCw,
-  FileText
+  FileText,
+  Eye
 } from 'lucide-react';
 import { getPublicPhoto } from '../api/api';
+import PersonnelDetailModal from './PersonnelDetailModal';
 
 const calculateProgress = (dokumen) => {
   if (!dokumen) return { completed: 0, total: 0, percentage: 0, isComplete: false };
@@ -102,6 +104,7 @@ export default function DataTable({
   const [expandedId, setExpandedId] = useState(null);
   const [photos, setPhotos] = useState({});
   const loadedPhotosRef = useRef(new Set());
+  const [detailModal, setDetailModal] = useState({ open: false, personnel: null });
 
   // Stagger animation delay per card index
   const getCardDelay = (index) => `${Math.min(index * 40, 600)}ms`;
@@ -401,7 +404,11 @@ export default function DataTable({
                 >
                   <div className="flex items-start gap-4">
                     {/* Avatar */}
-                    <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                    <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDetailModal({ open: true, personnel: person, sdmType });
+                      }}>
                       <CircularProgress percentage={progress.percentage} />
                       {photos[photoKey] ? (
                         <img
@@ -448,17 +455,17 @@ export default function DataTable({
                         {person.bidang || '-'}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        {sdmType === 'dosenSarjana' && person.nik && (
+                        {sdmType === 'dosenTetap' && person.nik && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold">
                             NIK: {person.nik}
                           </span>
                         )}
-                        {sdmType === 'dosenSarjana' && person.no_hp && (
+                        {sdmType === 'dosenTetap' && person.no_hp && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold">
                             HP: {person.no_hp}
                           </span>
                         )}
-                        {sdmType === 'dosenSarjana' && person.mata_kuliah && (
+                        {sdmType === 'dosenTetap' && person.mata_kuliah && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold truncate max-w-[180px]">
                             {person.mata_kuliah}
                           </span>
@@ -496,8 +503,8 @@ export default function DataTable({
                 {/* Expanded Content */}
                 {isExpanded && (
                   <div className="bg-white rounded-b-2xl border-t border-slate-200">
-                    {/* Info Detail - Dosen Sarjana only */}
-                    {sdmType === 'dosenSarjana' && (
+                    {/* Info Detail - Dosen Tetap only */}
+                    {sdmType === 'dosenTetap' && (
                       <div className="px-5 pt-4 pb-3 space-y-2 border-b border-slate-100">
                         {isEditing ? (
                           <>
@@ -673,6 +680,13 @@ export default function DataTable({
                       ) : (
                         <>
                           <button
+                            onClick={() => setDetailModal({ open: true, personnel: person, sdmType })}
+                            className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                            Detail
+                          </button>
+                          <button
                             onClick={() => handleEdit(person)}
                             className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           >
@@ -704,6 +718,17 @@ export default function DataTable({
           <p className="text-sm text-slate-500">Coba sesuaikan filter atau kata kunci pencarian Anda.</p>
         </div>
       )}
+
+      {/* Personnel Detail Modal */}
+      <PersonnelDetailModal
+        isOpen={detailModal.open}
+        onClose={() => setDetailModal(prev => ({ ...prev, open: false }))}
+        personnel={detailModal.personnel}
+        sdmType={detailModal.sdmType}
+        photoUrl={detailModal.personnel ? photos[`${detailModal.sdmType}_${detailModal.personnel.id}`] || null : null}
+      />
     </div>
   );
 }
+
+export default DataTable;

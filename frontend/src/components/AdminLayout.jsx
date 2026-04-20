@@ -14,7 +14,7 @@ import { useState } from 'react';
 
 const menuItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { path: '/admin/dosen-sarjana', label: 'Dosen Sarjana', icon: GraduationCap },
+  { path: '/admin/dosen-tetap', label: 'Dosen Tetap', icon: GraduationCap },
   { path: '/admin/pembimbing-klinik', label: 'Pembimbing Klinik', icon: Stethoscope },
   { path: '/admin/tendik', label: 'Tendik & Laboran', icon: Users },
 ];

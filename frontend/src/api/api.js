@@ -32,12 +32,12 @@ export const login = (username, password) => api.post('/auth/login', { username,
 export const logout = () => api.post('/auth/logout');
 export const getMe = () => api.get('/auth/me');
 
-// Dosen Sarjana
-export const getDosenSarjana = () => api.get('/dosen-sarjana');
-export const getDosenSarjanaById = (id) => api.get(`/dosen-sarjana/${id}`);
-export const createDosenSarjana = (data) => api.post('/dosen-sarjana', data);
-export const updateDosenSarjana = (id, data) => api.put(`/dosen-sarjana/${id}`, data);
-export const deleteDosenSarjana = (id) => api.delete(`/dosen-sarjana/${id}`);
+// Dosen Tetap
+export const getDosenSarjana = () => api.get('/dosen-tetap');
+export const getDosenSarjanaById = (id) => api.get(`/dosen-tetap/${id}`);
+export const createDosenSarjana = (data) => api.post('/dosen-tetap', data);
+export const updateDosenSarjana = (id, data) => api.put(`/dosen-tetap/${id}`, data);
+export const deleteDosenSarjana = (id) => api.delete(`/dosen-tetap/${id}`);
 
 // Pembimbing Klinik
 export const getPembimbingKlinik = () => api.get('/pembimbing-klinik');

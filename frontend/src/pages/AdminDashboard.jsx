@@ -95,11 +95,11 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <StatCard
             icon={GraduationCap}
-            title="Dosen Sarjana"
-            total={stats?.dosenSarjana?.total || 0}
-            complete={stats?.dosenSarjana?.complete || 0}
-            incomplete={stats?.dosenSarjana?.incomplete || 0}
-            avgPercent={stats?.dosenSarjana?.avgPercentage || 0}
+            title="Dosen Tetap"
+            total={stats?.dosenTetap?.total || 0}
+            complete={stats?.dosenTetap?.complete || 0}
+            incomplete={stats?.dosenTetap?.incomplete || 0}
+            avgPercent={stats?.dosenTetap?.avgPercentage || 0}
             color="text-blue-600"
             bgColor="bg-blue-100"
           />
@@ -133,12 +133,12 @@ export default function AdminDashboard() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Link
-              to="/admin/dosen-sarjana"
+              to="/admin/dosen-tetap"
               className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors"
             >
               <div>
-                <p className="font-semibold text-slate-900">Kelola Dosen Sarjana</p>
-                <p className="text-sm text-slate-500">{stats?.dosenSarjana?.total || 0} data</p>
+                <p className="font-semibold text-slate-900">Kelola Dosen Tetap</p>
+                <p className="text-sm text-slate-500">{stats?.dosenTetap?.total || 0} data</p>
               </div>
               <ArrowRight className="w-5 h-5 text-slate-400" />
             </Link>

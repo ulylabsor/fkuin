@@ -31,7 +31,7 @@ const calculateProgress = (dokumen) => {
 export default function PublicDashboard({ tab: initialTab }) {
   const location = useLocation();
   const [stats, setStats] = useState(null);
-  const [dosenSarjana, setDosenSarjana] = useState([]);
+  const [dosenTetap, setDosenSarjana] = useState([]);
   const [pembimbingKlinik, setPembimbingKlinik] = useState([]);
   const [tendik, setTendik] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,10 +84,10 @@ export default function PublicDashboard({ tab: initialTab }) {
 
   const getActiveData = () => {
     switch (activeTab) {
-      case 'sarjana': return dosenSarjana;
+      case 'sarjana': return dosenTetap;
       case 'klinik': return pembimbingKlinik;
       case 'tendik': return tendik;
-      default: return dosenSarjana;
+      default: return dosenTetap;
     }
   };
 
@@ -172,15 +172,15 @@ export default function PublicDashboard({ tab: initialTab }) {
               <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="text-2xl font-bold text-slate-900">{stats?.dosenSarjana?.total || 0}</span>
+              <span className="text-2xl font-bold text-slate-900">{stats?.dosenTetap?.total || 0}</span>
             </div>
-            <h3 className="font-bold text-slate-900 mb-2">Dosen Sarjana</h3>
+            <h3 className="font-bold text-slate-900 mb-2">Dosen Tetap</h3>
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span className="text-slate-600">{stats?.dosenSarjana?.complete || 0} Lengkap</span>
+              <span className="text-slate-600">{stats?.dosenTetap?.complete || 0} Lengkap</span>
               <span className="text-slate-300">|</span>
               <AlertCircle className="w-4 h-4 text-amber-600" />
-              <span className="text-slate-600">{stats?.dosenSarjana?.incomplete || 0} Perlu Tindakan</span>
+              <span className="text-slate-600">{stats?.dosenTetap?.incomplete || 0} Perlu Tindakan</span>
             </div>
           </div>
 
@@ -221,9 +221,9 @@ export default function PublicDashboard({ tab: initialTab }) {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 bg-white p-1 rounded-xl border border-slate-200 w-max">
-          <Link to="/dosen-sarjana"
+          <Link to="/dosen-tetap"
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'sarjana' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-            Dosen Sarjana ({stats?.dosenSarjana?.total || 0})
+            Dosen Tetap ({stats?.dosenTetap?.total || 0})
           </Link>
           <Link to="/pembimbing-klinik"
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'klinik' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>

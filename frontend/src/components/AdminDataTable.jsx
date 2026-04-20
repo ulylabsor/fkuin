@@ -18,7 +18,8 @@ import {
   ExternalLink
 } from 'lucide-react';
 import DocumentModal from './DocumentModal';
-import { getPhoto, getDocumentsAdmin } from '../api/api';
+import PersonnelDetailModal from './PersonnelDetailModal';
+import { getPhoto, getDocumentsAdmin, getPublicFileInfo } from '../api/api';
 
 // Mapping key database ke folder key
 const dbToFolderKey = {
@@ -48,7 +49,7 @@ const dbToFolderKey = {
 
 // Urutan dokumen sesuai dengan modal upload
 const documentOrder = {
-  dosenSarjana: [
+  dosenTetap: [
     'Foto', 'KTP', 'Surat Perjanjian DT', 'Surat Penugasan Rector', 'Pernyataan EWMP',
     'CV', 'SIP', 'STR', 'Sertifikat Pelatihan', 'Ijazah S1', 'Ijazah Profesi', 'Ijazah S2',
     'Transkrip S1', 'Transkrip Profesi', 'Transkrip S2'
@@ -169,6 +170,8 @@ export default function AdminDataTable({
     personnelId: null,
     personnelName: ''
   });
+  const [detailModal, setDetailModal] = useState({ open: false, personnel: null });
+  const [documentFiles, setDocumentFiles] = useState({});
   const [photos, setPhotos] = useState({});
 
   // Stagger animation delay per card index
@@ -191,6 +194,25 @@ export default function AdminDataTable({
       });
     }
   }, [data, sdmType]);
+
+  // Load document files for modal
+  useEffect(() => {
+    const loadDocFiles = async () => {
+      try {
+        const res = await getPublicFileInfo(sdmType);
+        const filesData = {};
+        if (res.data.personnel) {
+          res.data.personnel.forEach(p => {
+            filesData[`${sdmType}_${p.id}`] = p.documents;
+          });
+        }
+        setDocumentFiles(filesData);
+      } catch (err) {
+        console.error('Error loading document files:', err);
+      }
+    };
+    loadDocFiles();
+  }, [sdmType]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -279,7 +301,7 @@ export default function AdminDataTable({
 
   const startEditFields = (person) => {
     setEditMode(person.id);
-    if (sdmType === 'dosenSarjana') {
+    if (sdmType === 'dosenTetap') {
       setEditFields({
         nama: person.nama || '', bidang: person.bidang || '', kualifikasi: person.kualifikasi || '',
         nik: person.nik || '', no_str: person.no_str || '', no_hp: person.no_hp || '',
@@ -307,7 +329,7 @@ export default function AdminDataTable({
       delete updated.catatan;
       delete updated.created_at;
       delete updated.updated_at;
-      const apiMap = { dosenSarjana: 'updateDosenSarjana', pembimbingKlinik: 'updatePembimbingKlinik', tendik: 'updateTendik' };
+      const apiMap = { dosenTetap: 'updateDosenSarjana', pembimbingKlinik: 'updatePembimbingKlinik', tendik: 'updateTendik' };
       const apiFn = apiMap[sdmType];
       const api = await import('../api/api');
       await api[apiFn](id, { ...updated, catatan: person.catatan });
@@ -432,8 +454,8 @@ export default function AdminDataTable({
                 className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
 
-              {/* Dosen Sarjana */}
-              {sdmType === 'dosenSarjana' && (
+              {/* Dosen Tetap */}
+              {sdmType === 'dosenTetap' && (
                 <>
                   <input type="text" placeholder="NIK" value={newPerson.nik} onChange={(e) => setNewPerson({ ...newPerson, nik: e.target.value })} className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" />
                   <input type="text" placeholder="No. STR" value={newPerson.no_str} onChange={(e) => setNewPerson({ ...newPerson, no_str: e.target.value })} className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" />
@@ -514,7 +536,11 @@ export default function AdminDataTable({
                     onClick={toggleExpand}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                      <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDetailModal({ open: true, personnel: person });
+                        }}>
                         <CircularProgress percentage={progress.percentage} />
                         {photos[person.id] ? (
                           <img
@@ -548,7 +574,7 @@ export default function AdminDataTable({
                           </div>
                         </div>
                         <p className="text-sm text-slate-500 font-medium truncate mt-0.5">{person.bidang || '-'}</p>
-                        {sdmType === 'dosenSarjana' && (
+                        {sdmType === 'dosenTetap' && (
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             {person.nik && (
                               <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold">
@@ -591,7 +617,7 @@ export default function AdminDataTable({
                   {/* Expanded Content */}
                   {isExpanded && (
                     <div className="bg-white rounded-b-2xl border-t border-slate-200">
-                      {sdmType === 'dosenSarjana' && (
+                      {sdmType === 'dosenTetap' && (
                         <div className="px-5 pt-4 pb-3 space-y-2 border-b border-slate-100">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data Diri</span>
@@ -1006,6 +1032,16 @@ export default function AdminDataTable({
         personnelId={documentModal.personnelId}
         personnelName={documentModal.personnelName}
         onRefresh={onRefresh}
+      />
+
+      {/* Personnel Detail Modal */}
+      <PersonnelDetailModal
+        isOpen={detailModal.open}
+        onClose={() => setDetailModal(prev => ({ ...prev, open: false }))}
+        personnel={detailModal.personnel}
+        sdmType={sdmType}
+        photoUrl={detailModal.personnel ? photos[detailModal.personnel.id] || null : null}
+        documentFiles={detailModal.personnel ? documentFiles[`${sdmType}_${detailModal.personnel.id}`] || [] : []}
       />
 
       <style>{`

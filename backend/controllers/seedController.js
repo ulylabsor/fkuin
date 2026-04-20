@@ -12,7 +12,7 @@ const docSarjanaKurang = {
   "Ijazah Profesi": true, "Ijazah S2": true, "Transkrip S1": true, "Transkrip Profesi": true, "Transkrip S2": false
 };
 
-const dosenSarjanaData = [
+const dosenTetapData = [
   { nama: "dr. Istiqomah, M.Biomed", bidang: "Anatomi", kualifikasi: "Magister Biomedik", dokumen: docSarjanaLengkap },
   { nama: "dr. Rahma Ayu Larasati, M.Biomed", bidang: "Biokimia", kualifikasi: "Magister Biomedik", dokumen: docSarjanaLengkap },
   { nama: "dr. Arrizqi Hafidh Abdussalam, M.Biomed.", bidang: "Histologi", kualifikasi: "Magister Biomedik", dokumen: docSarjanaLengkap },
@@ -86,16 +86,16 @@ exports.seedData = async () => {
     const conn = await pool.getConnection();
 
     // Check if data already exists
-    const [dosenSarjanaCount] = await conn.query('SELECT COUNT(*) as count FROM dosen_sarjana');
-    if (dosenSarjanaCount[0].count === 0) {
+    const [dosenTetapCount] = await conn.query('SELECT COUNT(*) as count FROM dosen_sarjana');
+    if (dosenTetapCount[0].count === 0) {
       console.log('Seeding dosen sarjana data...');
-      for (const data of dosenSarjanaData) {
+      for (const data of dosenTetapData) {
         await conn.query(
           'INSERT INTO dosen_sarjana (nama, bidang, kualifikasi, dokumen) VALUES (?, ?, ?, ?)',
           [data.nama, data.bidang, data.kualifikasi, JSON.stringify(data.dokumen)]
         );
       }
-      console.log(`Seeded ${dosenSarjanaData.length} dosen sarjana records`);
+      console.log(`Seeded ${dosenTetapData.length} dosen sarjana records`);
     }
 
     const [pembimbingCount] = await conn.query('SELECT COUNT(*) as count FROM pembimbing_klinik');

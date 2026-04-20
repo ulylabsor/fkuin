@@ -1,9 +1,9 @@
 // Konfigurasi dokumen per jenis SDM
 
 const dokumenConfig = {
-  dosenSarjana: {
+  dosenTetap: {
     tableName: 'dosen_sarjana',
-    folder: 'dosen-sarjana',
+    folder: 'dosen-tetap',
     documents: [
       { key: 'Foto', label: 'Foto', extensions: ['jpg', 'jpeg', 'png'], maxSize: 2, required: true },
       { key: 'KTP', label: 'KTP', extensions: ['pdf', 'jpg', 'jpeg', 'png'], maxSize: 5, required: true },
@@ -92,7 +92,7 @@ const toOriginalKey = (folderKey) => {
 // Get SDM type dari table name
 const getSdmTypeFromTable = (tableName) => {
   const mapping = {
-    'dosen_sarjana': 'dosenSarjana',
+    'dosen_sarjana': 'dosenTetap',
     'pembimbing_klinik': 'pembimbingKlinik',
     'tendik': 'tendik'
   };

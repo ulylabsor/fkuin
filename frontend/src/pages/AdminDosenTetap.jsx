@@ -3,7 +3,7 @@ import AdminLayout from '../components/AdminLayout';
 import AdminDataTable from '../components/AdminDataTable';
 import { getDosenSarjana, createDosenSarjana, deleteDosenSarjana, updateDosenSarjana } from '../api/api';
 
-export default function AdminDosenSarjana() {
+export default function AdminDosenTetap() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +49,7 @@ export default function AdminDosenSarjana() {
   return (
     <AdminLayout>
       <AdminDataTable
-        title="Dosen Sarjana"
+        title="Dosen Tetap"
         description="Manajemen kelengkapan berkas administrasi dan sertifikasi dosen program sarjana."
         data={data}
         loading={loading}
@@ -57,7 +57,7 @@ export default function AdminDosenSarjana() {
         onAdd={handleAdd}
         onDelete={handleDelete}
         onUpdateCatatan={handleUpdateCatatan}
-        sdmType="dosenSarjana"
+        sdmType="dosenTetap"
       />
     </AdminLayout>
   );

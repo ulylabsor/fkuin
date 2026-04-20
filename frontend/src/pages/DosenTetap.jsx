@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
-import { getDosenSarjana, createDosenSarjana, updateDosenSarjana, deleteDosenSarjana, getStats } from '../api/api';
+import { getDosenTetap, createDosenTetap, updateDosenTetap, deleteDosenTetap, getStats } from '../api/api';
 
 const defaultDocuments = {
   "KTP": false, "Surat Perjanjian DT": false, "Surat Penugasan Rector": false,
@@ -10,7 +10,7 @@ const defaultDocuments = {
   "Ijazah S2": false, "Transkrip S1": false, "Transkrip Profesi": false, "Transkrip S2": false
 };
 
-export default function DosenSarjana() {
+export default function DosenTetap() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -22,7 +22,7 @@ export default function DosenSarjana() {
 
   const loadData = async () => {
     try {
-      const res = await getDosenSarjana();
+      const res = await getDosenTetap();
       setData(res.data);
     } catch (err) {
       console.error('Error loading data:', err);
@@ -43,9 +43,9 @@ export default function DosenSarjana() {
   const handleSave = async (id, editData) => {
     try {
       if (id) {
-        await updateDosenSarjana(id, editData);
+        await updateDosenTetap(id, editData);
       } else {
-        await createDosenSarjana(editData);
+        await createDosenTetap(editData);
       }
       await loadData();
       await loadStats();
@@ -57,7 +57,7 @@ export default function DosenSarjana() {
 
   const handleDelete = async (id) => {
     try {
-      await deleteDosenSarjana(id);
+      await deleteDosenTetap(id);
       await loadData();
       await loadStats();
     } catch (err) {
@@ -69,7 +69,7 @@ export default function DosenSarjana() {
   return (
     <Layout stats={stats}>
       <DataTable
-        title="Dosen Sarjana"
+        title="Dosen Tetap"
         description="Manajemen kelengkapan berkas administrasi dan sertifikasi dosen program sarjana."
         data={data}
         loading={loading}
@@ -77,7 +77,7 @@ export default function DosenSarjana() {
         onSave={handleSave}
         onDelete={handleDelete}
         defaultDocuments={defaultDocuments}
-        sdmType="dosenSarjana"
+        sdmType="dosenTetap"
       />
     </Layout>
   );

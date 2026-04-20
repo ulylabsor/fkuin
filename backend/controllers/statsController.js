@@ -15,7 +15,7 @@ const calculateProgress = (dokumen) => {
 
 exports.getStats = async (req, res) => {
   try {
-    const [dosenSarjana] = await pool.query('SELECT * FROM dosen_sarjana');
+    const [dosenTetap] = await pool.query('SELECT * FROM dosen_sarjana');
     const [pembimbingKlinik] = await pool.query('SELECT * FROM pembimbing_klinik');
     const [tendik] = await pool.query('SELECT * FROM tendik');
 
@@ -24,7 +24,7 @@ exports.getStats = async (req, res) => {
       dokumen: typeof row.dokumen === 'string' ? JSON.parse(row.dokumen) : row.dokumen
     }));
 
-    const formattedDosenSarjana = formatData(dosenSarjana);
+    const formattedDosenSarjana = formatData(dosenTetap);
     const formattedPembimbing = formatData(pembimbingKlinik);
     const formattedTendik = formatData(tendik);
 
@@ -44,7 +44,7 @@ exports.getStats = async (req, res) => {
     }));
 
     res.json({
-      dosenSarjana: {
+      dosenTetap: {
         total: formattedDosenSarjana.length,
         complete: sarjanaStats.filter(p => p.isComplete).length,
         incomplete: sarjanaStats.filter(p => !p.isComplete).length,
@@ -71,7 +71,14 @@ exports.getStats = async (req, res) => {
       grandTotal: {
         total: formattedDosenSarjana.length + formattedPembimbing.length + formattedTendik.length,
         complete: sarjanaStats.filter(p => p.isComplete).length + klinikStats.filter(p => p.isComplete).length + tendikStats.filter(p => p.isComplete).length
-      }
+      },
+      lastUpdated: dosenTetap.length > 0
+        ? Math.max(
+            ...dosenTetap.map(r => r.updated_at ? new Date(r.updated_at).getTime() : 0),
+            ...pembimbingKlinik.map(r => r.updated_at ? new Date(r.updated_at).getTime() : 0),
+            ...tendik.map(r => r.updated_at ? new Date(r.updated_at).getTime() : 0)
+          )
+        : null
     });
   } catch (error) {
     console.error('Error fetching stats:', error);

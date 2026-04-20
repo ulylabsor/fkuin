@@ -132,7 +132,7 @@ exports.delete = async (req, res) => {
     const { id } = req.params;
 
     // Delete uploaded files first
-    deleteAllFiles('dosenSarjana', id);
+    deleteAllFiles('dosenTetap', id);
 
     const [result] = await pool.query('DELETE FROM dosen_sarjana WHERE id = ?', [id]);
 

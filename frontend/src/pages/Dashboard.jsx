@@ -17,6 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicDocumentKeys, getPublicFileInfo } from '../api/api';
+import PersonnelDetailModal from '../components/PersonnelDetailModal';
 
 // Mapping folder key (underscore) ke database key (dengan spasi)
 const folderKeyToDbKey = {
@@ -102,7 +103,7 @@ export default function Dashboard() {
   const { isAuthenticated } = useAuth();
 
   const [stats, setStats] = useState(null);
-  const [dosenSarjana, setDosenSarjana] = useState([]);
+  const [dosenTetap, setDosenSarjana] = useState([]);
   const [pembimbingKlinik, setPembimbingKlinik] = useState([]);
   const [tendik, setTendik] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,6 +113,7 @@ export default function Dashboard() {
   const [photos, setPhotos] = useState({});
   const [documentKeys, setDocumentKeys] = useState({});
   const [documentFiles, setDocumentFiles] = useState({});
+  const [detailModal, setDetailModal] = useState({ open: false, personnel: null });
 
   const getFileUrl = (sdmType, personId, docKey) => {
     const key = `${sdmType}_${personId}`;
@@ -126,12 +128,12 @@ export default function Dashboard() {
     const loadDocFiles = async () => {
       try {
         const [dsRes, pkRes, tdRes] = await Promise.all([
-          getPublicFileInfo('dosenSarjana'),
+          getPublicFileInfo('dosenTetap'),
           getPublicFileInfo('pembimbingKlinik'),
           getPublicFileInfo('tendik')
         ]);
         const filesData = {};
-        if (dsRes.data.personnel) dsRes.data.personnel.forEach(p => { filesData[`dosenSarjana_${p.id}`] = p.documents; });
+        if (dsRes.data.personnel) dsRes.data.personnel.forEach(p => { filesData[`dosenTetap_${p.id}`] = p.documents; });
         if (pkRes.data.personnel) pkRes.data.personnel.forEach(p => { filesData[`pembimbingKlinik_${p.id}`] = p.documents; });
         if (tdRes.data.personnel) tdRes.data.personnel.forEach(p => { filesData[`tendik_${p.id}`] = p.documents; });
         setDocumentFiles(filesData);
@@ -161,12 +163,12 @@ export default function Dashboard() {
   const loadDocumentKeys = async () => {
     try {
       const [dsRes, pkRes, tdRes] = await Promise.all([
-        getPublicDocumentKeys('dosenSarjana'),
+        getPublicDocumentKeys('dosenTetap'),
         getPublicDocumentKeys('pembimbingKlinik'),
         getPublicDocumentKeys('tendik')
       ]);
       setDocumentKeys({
-        dosenSarjana: dsRes.data.documents,
+        dosenTetap: dsRes.data.documents,
         pembimbingKlinik: pkRes.data.documents,
         tendik: tdRes.data.documents
       });
@@ -177,14 +179,14 @@ export default function Dashboard() {
 
   // Load photos
   useEffect(() => {
-    if (dosenSarjana.length > 0 || pembimbingKlinik.length > 0 || tendik.length > 0) {
+    if (dosenTetap.length > 0 || pembimbingKlinik.length > 0 || tendik.length > 0) {
       const loadPhotos = async () => {
-        // Load for Dosen Sarjana
-        for (const person of dosenSarjana) {
-          const key = `dosenSarjana_${person.id}`;
+        // Load for Dosen Tetap
+        for (const person of dosenTetap) {
+          const key = `dosenTetap_${person.id}`;
           if (person.dokumen?.Foto && !photos[key]) {
             try {
-              const res = await getPublicPhoto('dosenSarjana', person.id);
+              const res = await getPublicPhoto('dosenTetap', person.id);
               if (res.data.photoUrl) {
                 setPhotos(prev => ({ ...prev, [key]: res.data.photoUrl }));
               }
@@ -224,7 +226,7 @@ export default function Dashboard() {
       };
       loadPhotos();
     }
-  }, [dosenSarjana, pembimbingKlinik, tendik]);
+  }, [dosenTetap, pembimbingKlinik, tendik]);
 
   const loadData = async () => {
     try {
@@ -249,10 +251,10 @@ export default function Dashboard() {
 
   const getActiveData = () => {
     switch (activeTab) {
-      case 'sarjana': return dosenSarjana;
+      case 'sarjana': return dosenTetap;
       case 'klinik': return pembimbingKlinik;
       case 'tendik': return tendik;
-      default: return dosenSarjana;
+      default: return dosenTetap;
     }
   };
 
@@ -317,15 +319,15 @@ export default function Dashboard() {
               <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="text-2xl font-bold text-slate-900">{stats?.dosenSarjana?.total || 0}</span>
+              <span className="text-2xl font-bold text-slate-900">{stats?.dosenTetap?.total || 0}</span>
             </div>
-            <h3 className="font-bold text-slate-900 mb-2">Dosen Sarjana</h3>
+            <h3 className="font-bold text-slate-900 mb-2">Dosen Tetap</h3>
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span className="text-slate-600">{stats?.dosenSarjana?.complete || 0} Lengkap</span>
+              <span className="text-slate-600">{stats?.dosenTetap?.complete || 0} Lengkap</span>
               <span className="text-slate-300">|</span>
               <AlertCircle className="w-4 h-4 text-amber-600" />
-              <span className="text-slate-600">{stats?.dosenSarjana?.incomplete || 0} Perlu Tindakan</span>
+              <span className="text-slate-600">{stats?.dosenTetap?.incomplete || 0} Perlu Tindakan</span>
             </div>
           </div>
 
@@ -366,9 +368,9 @@ export default function Dashboard() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 bg-white p-1 rounded-xl border border-slate-200 w-max">
-          <Link to="/dosen-sarjana"
+          <Link to="/dosen-tetap"
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'sarjana' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-            Dosen Sarjana ({stats?.dosenSarjana?.total || 0})
+            Dosen Tetap ({stats?.dosenTetap?.total || 0})
           </Link>
           <Link to="/pembimbing-klinik"
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'klinik' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
@@ -400,7 +402,7 @@ export default function Dashboard() {
           {filteredData.map((person) => {
             const progress = calculateProgress(person.dokumen);
             const isExpanded = expandedId === person.id;
-            const photoKey = `${activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'}_${person.id}`;
+            const photoKey = `${activeTab === 'sarjana' ? 'dosenTetap' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'}_${person.id}`;
             const hasCatatan = !!person.catatan;
             const toggleExpand = (e) => {
               e.stopPropagation();
@@ -419,7 +421,12 @@ export default function Dashboard() {
                 onClick={toggleExpand}
                 style={{ animationDelay: getCardDelay(filteredData.indexOf(person)) }}>
                 <div className="flex items-start gap-4">
-                  <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                  <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const sdmTypeKey = activeTab === 'sarjana' ? 'dosenTetap' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik';
+                      setDetailModal({ open: true, personnel: person, sdmType: sdmTypeKey });
+                    }}>
                     <CircularProgress percentage={progress.percentage} />
                     {photos[photoKey] ? (
                       <img
@@ -536,10 +543,10 @@ export default function Dashboard() {
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
-                        {(documentKeys[activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
+                        {(documentKeys[activeTab === 'sarjana' ? 'dosenTetap' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik'] || []).map((doc) => {
                           const dbKey = folderKeyToDbKey[doc.key] || doc.key;
                           const value = person.dokumen?.[dbKey];
-                          const fileUrl = getFileUrl(activeTab === 'sarjana' ? 'dosenSarjana' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik', person.id, doc.key);
+                          const fileUrl = getFileUrl(activeTab === 'sarjana' ? 'dosenTetap' : activeTab === 'klinik' ? 'pembimbingKlinik' : 'tendik', person.id, doc.key);
                           return value && fileUrl ? (
                             <a
                               key={doc.key}
@@ -598,6 +605,16 @@ export default function Dashboard() {
           <p>Periode: Tahun Akademik 2026/2027 | Fakultas Kedokteran UIN Raden Fatah Palembang</p>
         </div>
       </main>
+
+      {/* Personnel Detail Modal */}
+      <PersonnelDetailModal
+        isOpen={detailModal.open}
+        onClose={() => setDetailModal(prev => ({ ...prev, open: false }))}
+        personnel={detailModal.personnel}
+        sdmType={detailModal.sdmType}
+        photoUrl={detailModal.personnel ? photos[`${detailModal.sdmType}_${detailModal.personnel.id}`] || null : null}
+        documentFiles={detailModal.personnel ? documentFiles[`${detailModal.sdmType}_${detailModal.personnel.id}`] || [] : []}
+      />
     </div>
   );
 }

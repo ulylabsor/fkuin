@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import AdminDosenSarjana from './pages/AdminDosenSarjana';
+import AdminDosenTetap from './pages/AdminDosenTetap';
 import AdminPembimbingKlinik from './pages/AdminPembimbingKlinik';
 import AdminTendik from './pages/AdminTendik';
 
@@ -36,7 +36,7 @@ function App() {
 
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/dosen-sarjana" element={<AdminRoute><AdminDosenSarjana /></AdminRoute>} />
+          <Route path="/admin/dosen-tetap" element={<AdminRoute><AdminDosenTetap /></AdminRoute>} />
           <Route path="/admin/pembimbing-klinik" element={<AdminRoute><AdminPembimbingKlinik /></AdminRoute>} />
           <Route path="/admin/tendik" element={<AdminRoute><AdminTendik /></AdminRoute>} />
         </Routes>

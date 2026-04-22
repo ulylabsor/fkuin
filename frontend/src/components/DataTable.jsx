@@ -352,11 +352,17 @@ export default function DataTable({
                           {Object.keys(person.dokumen).map((key) => {
                             const isUploaded = person.dokumen?.[key];
                             return (
-                              <span key={key} className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-bold ${
-                                isUploaded ? 'bg-emerald-500 text-white' : 'bg-red-100 text-red-500'
-                              }`} title={key}>
-                                {isUploaded ? <Check className="w-3 h-3 mx-auto" /> : <X className="w-3 h-3 mx-auto" />}
-                              </span>
+                              <div key={key} className="group relative inline-flex items-center justify-center">
+                                <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-bold ${
+                                  isUploaded ? 'bg-emerald-500 text-white' : 'bg-red-100 text-red-500'
+                                }`}>
+                                  {isUploaded ? <Check className="w-3 h-3 mx-auto" /> : <X className="w-3 h-3 mx-auto" />}
+                                </span>
+                                <span className="absolute bottom-7 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10 shadow-lg">
+                                  {key}
+                                  <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+                                </span>
+                              </div>
                             );
                           })}
                         </div>

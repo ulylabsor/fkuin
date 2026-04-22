@@ -11,7 +11,9 @@ import {
   Save,
   RefreshCw,
   FileText,
-  Eye
+  Eye,
+  LayoutGrid,
+  Table2
 } from 'lucide-react';
 import { getPublicPhoto } from '../api/api';
 import PersonnelDetailModal from './PersonnelDetailModal';
@@ -105,6 +107,7 @@ export default function DataTable({
   const [photos, setPhotos] = useState({});
   const loadedPhotosRef = useRef(new Set());
   const [detailModal, setDetailModal] = useState({ open: false, personnel: null });
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
 
   // Stagger animation delay per card index
   const getCardDelay = (index) => `${Math.min(index * 40, 600)}ms`;
@@ -259,8 +262,26 @@ export default function DataTable({
         </div>
       </div>
 
-      {/* Add Button */}
-      <div className="mb-4">
+      {/* View Toggle + Add Button */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+          <button
+            onClick={() => setViewMode('cards')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+              viewMode === 'cards' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" /> Kartu
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+              viewMode === 'table' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <Table2 className="w-4 h-4" /> Tabel
+          </button>
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/30 transition-all"
@@ -269,6 +290,74 @@ export default function DataTable({
           Tambah Data
         </button>
       </div>
+
+      {/* Table View */}
+      {viewMode === 'table' && filteredData.length > 0 && (
+        <div className="mb-6 overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Foto</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Nama</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Bidang</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Tempat, Tanggal Lahir</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Catatan</th>
+                <th className="px-4 py-3 text-center font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Status Kelengkapan</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredData.map((person) => {
+                const progress = calculateProgress(person.dokumen);
+                const photoKey = `${sdmType}_${person.id}`;
+                return (
+                  <tr key={person.id} className="bg-white hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => setDetailModal({ open: true, personnel: person, sdmType })}
+                        className="w-10 h-10 rounded-full overflow-hidden hover:ring-2 hover:ring-emerald-400 transition-all"
+                        title="Lihat detail"
+                      >
+                        {photos[photoKey] ? (
+                          <img src={photos[photoKey]} alt={person.nama} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className={`w-full h-full flex items-center justify-center font-bold text-sm ${
+                            progress.isComplete ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            {getInitials(person.nama)}
+                          </div>
+                        )}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">
+                      <button
+                        onClick={() => setDetailModal({ open: true, personnel: person, sdmType })}
+                        className="hover:text-emerald-600 hover:underline text-left"
+                        title="Lihat detail"
+                      >
+                        {person.nama}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{person.bidang || '-'}</td>
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                      {[person.tempat_lahir, person.tanggal_lahir ? new Date(person.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(', ') || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 max-w-[200px] truncate">{person.catatan || '-'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold border ${
+                        progress.isComplete
+                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                          : 'bg-amber-50 text-amber-600 border-amber-100'
+                      }`}>
+                        {progress.isComplete ? 'Lengkap' : `${progress.completed}/${progress.total} Syarat`}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Add Form */}
       {showForm && (
@@ -372,7 +461,7 @@ export default function DataTable({
       )}
 
       {/* Data Grid */}
-      {filteredData.length > 0 ? (
+      {viewMode === 'cards' && filteredData.length > 0 && (
         <div className="columns-1 lg:columns-2 xl:columns-3 gap-5">
           {filteredData.map((person) => {
             const progress = calculateProgress(person.dokumen);
@@ -709,7 +798,9 @@ export default function DataTable({
             );
           })}
         </div>
-      ) : (
+      )}
+
+      {filteredData.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-2xl border border-slate-200 border-dashed">
           <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
             <Search className="w-8 h-8 text-slate-400" />

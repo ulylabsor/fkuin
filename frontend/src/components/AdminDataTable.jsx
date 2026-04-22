@@ -705,12 +705,6 @@ export default function AdminDataTable({
                             {progress.isComplete ? 'Lengkap' : 'Belum Lengkap'}
                           </span>
                           <span className="text-xs font-semibold text-slate-400">{progress.completed}/{progress.total} Syarat</span>
-                          {hasCatatan && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
-                              <FileText className="w-3 h-3" />
-                              Ada Catatan
-                            </span>
-                          )}
                           {person.updated_at && (
                             <span className="text-xs text-slate-400 ml-auto">Diubah {formatUpdatedAt(person.updated_at)}</span>
                           )}
@@ -718,6 +712,17 @@ export default function AdminDataTable({
                       </div>
                     </div>
                   </div>
+
+                  {/* Catatan Preview (sebelum expand) */}
+                  {hasCatatan && !isExpanded && (
+                    <div className="px-5 pb-4 border-t border-amber-100 bg-amber-50/50">
+                      <div className="flex items-center gap-1.5 pt-3 mb-1.5">
+                        <FileText className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Catatan</span>
+                      </div>
+                      <p className="text-xs text-slate-600 whitespace-pre-wrap line-clamp-2">{person.catatan}</p>
+                    </div>
+                  )}
 
                   {/* Expanded Content */}
                   {isExpanded && (

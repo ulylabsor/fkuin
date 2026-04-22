@@ -301,7 +301,6 @@ export default function DataTable({
                 <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Nama</th>
                 <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Bidang</th>
                 <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Tempat, Tanggal Lahir</th>
-                <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Catatan</th>
                 <th className="px-4 py-3 text-center font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Kelengkapan</th>
               </tr>
             </thead>
@@ -328,20 +327,27 @@ export default function DataTable({
                         )}
                       </button>
                     </td>
-                    <td className="px-4 py-3 font-semibold text-slate-900">
-                      <button
-                        onClick={() => setDetailModal({ open: true, personnel: person, sdmType })}
-                        className="hover:text-emerald-600 hover:underline text-left"
-                        title="Lihat detail"
-                      >
-                        {person.nama}
-                      </button>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setDetailModal({ open: true, personnel: person, sdmType })}
+                          className="hover:text-emerald-600 hover:underline text-left font-semibold text-slate-900"
+                          title="Lihat detail"
+                        >
+                          {person.nama}
+                        </button>
+                        {person.catatan && (
+                          <FileText className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" title="Ada catatan" />
+                        )}
+                      </div>
+                      {person.catatan && (
+                        <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{person.catatan}</p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-600">{person.bidang || '-'}</td>
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                       {[person.tempat_lahir, person.tanggal_lahir ? new Date(person.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(', ') || '-'}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 max-w-[200px] truncate">{person.catatan || '-'}</td>
                     <td className="px-4 py-3">
                       {progress.isComplete ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">

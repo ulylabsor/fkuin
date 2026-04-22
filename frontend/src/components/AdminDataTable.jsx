@@ -461,7 +461,7 @@ export default function AdminDataTable({
                   <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Bidang</th>
                   <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Tempat, Tanggal Lahir</th>
                   <th className="px-4 py-3 text-left font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Catatan</th>
-                  <th className="px-4 py-3 text-center font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Status Kelengkapan</th>
+                  <th className="px-4 py-3 text-center font-bold text-slate-600 uppercase tracking-wider text-xs whitespace-nowrap">Kelengkapan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -500,14 +500,25 @@ export default function AdminDataTable({
                         {[person.tempat_lahir, person.tanggal_lahir ? new Date(person.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(', ') || '-'}
                       </td>
                       <td className="px-4 py-3 text-slate-500 max-w-[200px] truncate">{person.catatan || '-'}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold border ${
-                          progress.isComplete
-                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                            : 'bg-amber-50 text-amber-600 border-amber-100'
-                        }`}>
-                          {progress.isComplete ? 'Lengkap' : `${progress.completed}/${progress.total} Syarat`}
-                        </span>
+                      <td className="px-4 py-3">
+                        {progress.isComplete ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                            <Check className="w-3 h-3" /> Lengkap
+                          </span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1 justify-center max-w-[180px]">
+                            {getOrderedKeys(person.dokumen, sdmType).map((key) => {
+                              const isUploaded = person.dokumen?.[key];
+                              return (
+                                <span key={key} className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-bold ${
+                                  isUploaded ? 'bg-emerald-500 text-white' : 'bg-red-100 text-red-500'
+                                }`} title={key}>
+                                  {isUploaded ? <Check className="w-3 h-3 mx-auto" /> : <X className="w-3 h-3 mx-auto" />}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { BACKEND_URL } from '../api/api';
 import { X, Check, FileText, Award, User, Phone, MapPin, Calendar, BookOpen, GraduationCap, Briefcase, CreditCard, Stethoscope, Users, StickyNote, ExternalLink } from 'lucide-react';
 
 // Mapping folder key (underscore) ke database key (dengan spasi)
@@ -152,7 +153,7 @@ export default function PersonnelDetailModal({
       if (doc?.fileUrl) return doc.fileUrl;
     }
     // Fallback: construct URL from filename pattern
-    return `/api/public/file/${sdmType}/${personnel.id}/${folderKey}_`;
+    return `${BACKEND_URL}/api/public/file/${sdmType}/${personnel.id}/${folderKey}_`;
   };
 
   return (

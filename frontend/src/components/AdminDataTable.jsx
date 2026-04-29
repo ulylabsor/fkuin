@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import DocumentModal from './DocumentModal';
 import PersonnelDetailModal from './PersonnelDetailModal';
-import { getPhoto, getDocumentsAdmin, getPublicFileInfo } from '../api/api';
+import { getPhoto, getDocumentsAdmin, getPublicFileInfo, BACKEND_URL } from '../api/api';
 
 // Mapping key database ke folder key
 const dbToFolderKey = {
@@ -237,7 +237,7 @@ export default function AdminDataTable({
       const res = await getDocumentsAdmin(sdmType, person.id);
       const doc = res.data.documents.find(d => d.key === folderKey);
       if (doc && doc.file?.filename) {
-        const fileUrl = `/api/public/file/${sdmType}/${person.id}/${doc.file.filename}`;
+        const fileUrl = `${BACKEND_URL}/api/public/file/${sdmType}/${person.id}/${doc.file.filename}`;
         window.open(fileUrl, '_blank');
       } else {
         showToast('File tidak ditemukan di server', 'warning');

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const BACKEND_URL = import.meta.env.VITE_API_URL || '';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${BACKEND_URL}/api`,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -73,7 +75,7 @@ export const getPublicFileInfo = (sdmType) => api.get(`/public/file-info/${sdmTy
 export const uploadDocument = (formData) => {
   // Create a new axios instance for uploads to avoid Content-Type issues
   const uploadApi = axios.create({
-    baseURL: '/api'
+    baseURL: `${BACKEND_URL}/api`
   });
 
   // Add auth token

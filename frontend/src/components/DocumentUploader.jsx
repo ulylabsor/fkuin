@@ -10,7 +10,7 @@ import {
   Image,
   File as FileIcon
 } from 'lucide-react';
-import { uploadDocument, deleteDocument } from '../api/api';
+import { uploadDocument, deleteDocument, BACKEND_URL } from '../api/api';
 
 const DocumentUploader = ({
   sdmType,
@@ -96,8 +96,7 @@ const DocumentUploader = ({
   };
 
   const getFileUrl = (path) => {
-    // Convert path to full URL for viewing
-    return `/uploads/${path}`;
+    return `${BACKEND_URL}/uploads/${path}`;
   };
 
   const isImage = (filename) => {

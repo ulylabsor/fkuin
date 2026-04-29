@@ -15,7 +15,19 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Middleware
-app.use(cors());
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : ['http://localhost:5173'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -89,7 +101,7 @@ app.get('/api/public/photo/:sdmType/:personnelId', async (req, res) => {
       const files = listFiles(sdmType, personnelId);
       const fotoFile = files.find(f => f.filename.startsWith('Foto_'));
       if (fotoFile) {
-        photoUrl = `/uploads/${fotoFile.path}`;
+        photoUrl = `${process.env.BACKEND_URL || ''}/uploads/${fotoFile.path}`;
       }
     }
 
@@ -162,7 +174,7 @@ app.get('/api/public/file-info/:sdmType', async (req, res) => {
           label: doc.label,
           hasFile: !!file,
           filename: file ? file.filename : null,
-          fileUrl: file ? `/api/public/file/${sdmType}/${person.id}/${file.filename}` : null
+          fileUrl: file ? `${process.env.BACKEND_URL || ''}/api/public/file/${sdmType}/${person.id}/${file.filename}` : null
         };
       });
       return {

@@ -373,7 +373,7 @@ exports.getPhoto = async (req, res) => {
       const files = listFiles(sdmType, personnelId);
       const fotoFile = files.find(f => f.filename.startsWith('Foto_'));
       if (fotoFile) {
-        photoUrl = `/uploads/${fotoFile.path}`;
+        photoUrl = `${process.env.BACKEND_URL || ''}/uploads/${fotoFile.path}`;
       }
     }
 

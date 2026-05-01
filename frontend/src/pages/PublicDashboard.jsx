@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik } from '../api/api';
+import { getStats, getDosenSarjana, getPembimbingKlinik, getTendik, getPublicPhoto, getPublicFileInfo, BACKEND_URL } from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import PersonnelDetailModal from '../components/PersonnelDetailModal';
 import {
   GraduationCap,
   Stethoscope,
@@ -28,6 +29,24 @@ const calculateProgress = (dokumen) => {
   };
 };
 
+const getSdmTypeKey = (tab) => {
+  if (tab === 'klinik') return 'pembimbingKlinik';
+  if (tab === 'tendik') return 'tendik';
+  return 'dosenTetap';
+};
+
+const typeInfoMap = {
+  dosenTetap: { name: 'Dosen Tetap', color: 'blue', bgClass: 'from-blue-200 via-blue-100 to-transparent' },
+  pembimbingKlinik: { name: 'Pembimbing Klinik', color: 'purple', bgClass: 'from-purple-200 via-purple-100 to-transparent' },
+  tendik: { name: 'Tendik & Laboran', color: 'orange', bgClass: 'from-orange-200 via-orange-100 to-transparent' }
+};
+
+const colorClassesMap = {
+  blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
+  purple: { bg: 'bg-purple-100', text: 'text-purple-600' },
+  orange: { bg: 'bg-orange-100', text: 'text-orange-600' }
+};
+
 export default function PublicDashboard({ tab: initialTab }) {
   const location = useLocation();
   const [stats, setStats] = useState(null);
@@ -39,6 +58,13 @@ export default function PublicDashboard({ tab: initialTab }) {
   const [showOnlyIncomplete, setShowOnlyIncomplete] = useState(false);
   const { admin, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  const [photos, setPhotos] = useState({});
+  const [documentFiles, setDocumentFiles] = useState({});
+  const [detailModal, setDetailModal] = useState({ open: false, personnel: null, sdmType: null });
+
+  const loadedPhotosRef = useRef(new Set());
+  const loadedDocsRef = useRef(new Set());
 
   // Determine active tab from URL
   const getActiveTab = () => {
@@ -73,6 +99,61 @@ export default function PublicDashboard({ tab: initialTab }) {
     }
   };
 
+  // Load document files info
+  useEffect(() => {
+    const loadDocFiles = async () => {
+      try {
+        const [dsRes, pkRes, tdRes] = await Promise.all([
+          getPublicFileInfo('dosenTetap'),
+          getPublicFileInfo('pembimbingKlinik'),
+          getPublicFileInfo('tendik')
+        ]);
+        const filesData = {};
+        if (dsRes.data.personnel) dsRes.data.personnel.forEach(p => { filesData[`dosenTetap_${p.id}`] = p.documents; });
+        if (pkRes.data.personnel) pkRes.data.personnel.forEach(p => { filesData[`pembimbingKlinik_${p.id}`] = p.documents; });
+        if (tdRes.data.personnel) tdRes.data.personnel.forEach(p => { filesData[`tendik_${p.id}`] = p.documents; });
+        setDocumentFiles(filesData);
+      } catch (err) {
+        console.error('Error loading document files:', err);
+      }
+    };
+    loadDocFiles();
+  }, []);
+
+  // Load photos when data changes
+  useEffect(() => {
+    const allData = [...dosenTetap, ...pembimbingKlinik, ...tendik];
+    if (allData.length === 0) return;
+
+    const loadPhotos = async () => {
+      for (const person of allData) {
+        const sdmType = getSdmTypeKey(activeTab === 'klinik' ? 'klinik' : activeTab === 'tendik' ? 'tendik' : 'sarjana');
+        const sdmKey = getSdmTypeKey(person.nama ? (dosenTetap.includes(person) ? 'dosenTetap' : pembimbingKlinik.includes(person) ? 'pembimbingKlinik' : 'tendik') : 'dosenTetap');
+        const key = `${sdmKey}_${person.id}`;
+
+        // Find actual SDM type for this person
+        let actualSdmType = 'dosenTetap';
+        if (dosenTetap.some(p => p.id === person.id)) actualSdmType = 'dosenTetap';
+        else if (pembimbingKlinik.some(p => p.id === person.id)) actualSdmType = 'pembimbingKlinik';
+        else if (tendik.some(p => p.id === person.id)) actualSdmType = 'tendik';
+
+        const actualKey = `${actualSdmType}_${person.id}`;
+        if (person.dokumen?.Foto && !loadedPhotosRef.current.has(actualKey)) {
+          loadedPhotosRef.current.add(actualKey);
+          try {
+            const res = await getPublicPhoto(actualSdmType, person.id);
+            if (res.data.photoUrl) {
+              setPhotos(prev => ({ ...prev, [actualKey]: res.data.photoUrl }));
+            }
+          } catch (err) {
+            console.error('Error loading photo:', err);
+          }
+        }
+      }
+    };
+    loadPhotos();
+  }, [dosenTetap, pembimbingKlinik, tendik]);
+
   const handleLogin = () => {
     navigate('/login');
   };
@@ -99,9 +180,27 @@ export default function PublicDashboard({ tab: initialTab }) {
     return matchSearch && matchFilter;
   });
 
+  const getPersonSdmType = (person) => {
+    if (dosenTetap.some(p => p.id === person.id)) return 'dosenTetap';
+    if (pembimbingKlinik.some(p => p.id === person.id)) return 'pembimbingKlinik';
+    if (tendik.some(p => p.id === person.id)) return 'tendik';
+    return 'dosenTetap';
+  };
+
+  const getPersonPhoto = (person) => {
+    const sdmType = getPersonSdmType(person);
+    const key = `${sdmType}_${person.id}`;
+    return photos[key] || null;
+  };
+
   const getInitials = (name) => {
     let cleanName = name.replace(/^(dr\.|Dr\.|Hj\.)\s*/i, '');
     return cleanName.substring(0, 2).toUpperCase();
+  };
+
+  const handleCardClick = (person, sdmType) => {
+    const key = `${sdmType}_${person.id}`;
+    setDetailModal({ open: true, personnel: person, sdmType, documentFiles: documentFiles[key] || [] });
   };
 
   const CircularProgress = ({ percentage, size = 48, strokeWidth = 4 }) => {
@@ -256,14 +355,28 @@ export default function PublicDashboard({ tab: initialTab }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredData.map((person) => {
             const progress = calculateProgress(person.dokumen);
+            const sdmType = getPersonSdmType(person);
+            const photoUrl = getPersonPhoto(person);
             return (
-              <div key={person.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+              <div
+                key={person.id}
+                onClick={() => handleCardClick(person, sdmType)}
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 cursor-pointer hover:shadow-md hover:border-emerald-300 transition-all"
+              >
                 <div className="flex items-start gap-4">
                   <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
                     <CircularProgress percentage={progress.percentage} />
-                    <div className={`absolute w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${progress.isComplete ? 'bg-emerald-50 text-emerald-600' : progress.percentage >= 50 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}>
-                      {getInitials(person.nama)}
-                    </div>
+                    {photoUrl ? (
+                      <img
+                        src={photoUrl}
+                        alt={person.nama}
+                        className="absolute w-10 h-10 rounded-full object-cover ring-2 ring-white"
+                      />
+                    ) : (
+                      <div className={`absolute w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${progress.isComplete ? 'bg-emerald-50 text-emerald-600' : progress.percentage >= 50 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}>
+                        {getInitials(person.nama)}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-slate-900 text-[15px] leading-tight truncate pr-2">{person.nama}</h4>
@@ -297,6 +410,18 @@ export default function PublicDashboard({ tab: initialTab }) {
           <p className="mt-1">Fakultas Kedokteran UIN Raden Fatah Palembang</p>
         </div>
       </main>
+
+      {/* Detail Modal */}
+      {detailModal.open && detailModal.personnel && (
+        <PersonnelDetailModal
+          isOpen={detailModal.open}
+          personnel={detailModal.personnel}
+          sdmType={detailModal.sdmType}
+          photoUrl={getPersonPhoto(detailModal.personnel)}
+          documentFiles={detailModal.documentFiles || []}
+          onClose={() => setDetailModal({ open: false, personnel: null, sdmType: null })}
+        />
+      )}
     </div>
   );
 }
